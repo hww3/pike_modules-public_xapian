@@ -126,7 +126,7 @@ PIKEFUN string get_value(int val)
 
   pop_n_elems(args);
 
-  if(str)
+  if(str.length())
     push_text(str.c_str());
   else 
     push_int(0);
@@ -161,7 +161,7 @@ PIKEFUN void add_posting(string tname, int termpos, int termcount)
 
   string str(tname->str, tname->len);
   
-  doc->add_term(str, termpos, termcount);
+  doc->add_term(str, (unsigned int)termpos, (unsigned int)termcount);
 
   pop_n_elems(args);
 }

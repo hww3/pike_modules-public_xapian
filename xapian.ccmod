@@ -216,7 +216,6 @@ PIKEFUN object get_document(int id)
 
   try
   {
-
     doc = db->get_document((docid)id);
   }
 
@@ -232,9 +231,10 @@ PIKEFUN object get_document(int id)
 
   od = OBJ2_DOCUMENT(obj);
 
-  od->object_data->document = &doc;
+  od->object_data->document = new Document(doc);
     
   push_object(obj);
+
 }
 
 PIKEFUN int add_document(object document)

@@ -25,6 +25,7 @@ using namespace std;
 
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
 
+
 /*! @class Database
  */
 
@@ -659,6 +660,20 @@ EXIT
   }
 }
 
+}
+
+INIT
+{
+}
+EXIT
+{
+}
+EXTRA
+{
+add_integer_constant("DB_CREATE_OR_OPEN", DB_CREATE_OR_OPEN, 0);
+add_integer_constant("DB_CREATE", DB_CREATE, 0);
+add_integer_constant("DB_CREATE_OR_OVERWRITE", DB_CREATE_OR_OVERWRITE, 0);
+add_integer_constant("DB_OPEN", DB_OPEN, 0);
 }
 
 /*! @endclass

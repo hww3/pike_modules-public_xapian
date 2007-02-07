@@ -24,12 +24,15 @@ using namespace std;
 #include <ctype.h>
 
 #define OBJ2_MSET(o) ((struct MSet_struct *)get_storage(o, MSet_program))
+#define OBJ2_MSETITERATOR(o) ((struct MSetIterator_struct *)get_storage(o, MSetIterator_program))
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
 #define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
 #define OBJ2_QUERY(o) ((struct Query_struct *)get_storage(o, Query_program))
 
 
 extern "C" struct program * Document_program;
+extern "C" struct program * MSetIterator_program;
+extern "C" struct program * MSet_program;
 extern "C" typedef struct
 {
     Database *database;
@@ -57,8 +60,15 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    MSetIterator *mseti;
+} XAPIAN_MSETITERATOR_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
+
+
 
 
 /*! @class Query 
@@ -101,6 +111,70 @@ PIKEFUN void create(string term, int wqf, int pos)
     pop_n_elems(args);
 
     THIS->object_data->query = query;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN void create(int op, string left, string right)
+{
+  try
+  {
+	string lstr((const char *)left->str, (size_t)left->len);
+	string rstr((const char *)right->str, (size_t)right->len);
+    Query* query = new Query((Xapian::Query::op)op, lstr, rstr);
+
+    pop_n_elems(args);
+
+    THIS->object_data->query = query;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+
+PIKEFUN void create(int op, object left, object right)
+{
+  Query * l;
+  Query * r;
+
+  l = OBJ2_QUERY(left)->object_data->query;
+  r = OBJ2_QUERY(right)->object_data->query;
+
+  try
+  {
+    Query* query = new Query((Xapian::Query::op)op, l, r);
+
+    pop_n_elems(args);
+
+    THIS->object_data->query = query;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN void create(int op, object query)
+{
+  Query * q;
+
+  q = OBJ2_QUERY(query)->object_data->query;
+
+  try
+  {
+    Query* qe = new Query((Xapian::Query::op)op, *q);
+
+    pop_n_elems(args);
+
+    THIS->object_data->query = qe;
   }
 
   catch(...) 
@@ -155,9 +229,22 @@ EXIT
   {
     Query  *query;
     query = THIS->object_data->query;
-    if(query) delete query;
-    free(THIS->object_data);
+    // if(query) delete query;
+    //free(THIS->object_data);
   }
+}
+
+EXTRA
+{
+add_integer_constant("OP_AND", Query::OP_AND, 0);
+add_integer_constant("OP_OR", Query::OP_OR, 0);
+add_integer_constant("OP_AND_NOT", Query::OP_AND_NOT, 0);
+add_integer_constant("OP_XOR", Query::OP_XOR, 0);
+add_integer_constant("OP_AND_MAYBE", Query::OP_AND_MAYBE, 0);
+add_integer_constant("OP_FILTER", Query::OP_FILTER, 0);
+add_integer_constant("OP_NEAR", Query::OP_NEAR, 0);
+add_integer_constant("OP_PHRASE", Query::OP_PHRASE, 0);
+add_integer_constant("OP_ELITE_SET", Query::OP_ELITE_SET, 0);
 }
 
 }
@@ -367,7 +454,7 @@ EXIT
     
     Document  *doc;
     doc = THIS->object_data->document;
-    if(doc) delete doc;
+//    if(doc) delete doc;
 // hrm... odd.
 //    if(THIS->object_data)
 //      free(THIS->object_data);
@@ -378,6 +465,142 @@ EXIT
 
 /*! @endclass
  */
+
+/*! @class MSetIterator
+ */
+
+PIKECLASS MSetIterator
+{
+  CVAR XAPIAN_MSETITERATOR_OBJECT_DATA   *object_data;
+
+  PIKEFUN object get_document()
+  {
+    MSetIterator  *mseti;
+    Document doc;
+    Document *doc2;
+    struct object * o;
+    mseti = (MSetIterator*)THIS->object_data->mseti;
+    doc = mseti->get_document();    
+    doc2 = new Document(doc);
+
+    o = low_clone(Document_program);
+    OBJ2_DOCUMENT(o)->object_data->document = doc2;
+
+    push_object(o);
+  }
+
+  PIKEFUN int get_docid()
+  {
+    MSetIterator  *mseti;
+    docid i;
+    mseti = (MSetIterator*)THIS->object_data->mseti;
+    i = (*(*mseti));
+    push_int((INT_TYPE)i);
+  }
+
+  PIKEFUN int get_percent()
+  {
+    MSetIterator  *mseti;
+    docid i;
+    mseti = (MSetIterator*)THIS->object_data->mseti;
+    i = mseti->get_percent();
+    push_int((INT_TYPE)i);
+  }
+  
+  PIKEFUN float get_weight()
+  {
+    MSetIterator  *mseti;
+    weight i;
+    mseti = (MSetIterator*)THIS->object_data->mseti;
+    i = mseti->get_weight();
+    push_float((FLOAT_TYPE)i);
+  }
+  
+  PIKEFUN int get_collapse_count()
+  {
+    MSetIterator  *mseti;
+    docid i;
+    mseti = (MSetIterator*)THIS->object_data->mseti;
+    i = mseti->get_collapse_count();
+    push_int((INT_TYPE)i);
+  }
+  
+  PIKEFUN object next()
+  {
+    MSetIterator  *mseti;
+    mseti = THIS->object_data->mseti;
+    MSetIterator *mseti2;
+
+    struct object * o;
+
+    mseti2 = new MSetIterator((*mseti)++);
+
+    o = low_clone(MSetIterator_program);
+
+    OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+
+    push_object(o);    
+  }
+
+  PIKEFUN object prev()
+  {
+    MSetIterator  *mseti;
+    mseti = THIS->object_data->mseti;
+    MSetIterator *mseti2;
+
+    struct object * o;
+
+    mseti2 = new MSetIterator((*mseti)--);
+
+    o = low_clone(MSetIterator_program);
+
+    OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+
+    push_object(o);    
+  }
+
+
+  PIKEFUN int `==(mixed arg)
+  {
+    struct object * o;
+    MSetIterator  *mseti;
+    MSetIterator  *msetb;
+
+    if(arg->type!= T_OBJECT) RETURN(0);
+    o = arg->u.object;
+    mseti = (MSetIterator*)THIS->object_data->mseti;
+    msetb = OBJ2_MSETITERATOR(o)->object_data->mseti;
+    if(mseti == msetb) RETURN(1);
+    else RETURN(0);
+  }
+
+INIT
+{
+    XAPIAN_MSETITERATOR_OBJECT_DATA * dta = 
+	(XAPIAN_MSETITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_MSETITERATOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->mseti = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    MSetIterator  *mseti;
+    mseti = THIS->object_data->mseti;
+//    if(mseti) delete mseti;
+    //free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
 
 /*! @class MSet 
  */
@@ -407,6 +630,66 @@ PIKEFUN void create()
   {
     Pike_error("an error occurred!\n");
   }
+}
+
+PIKEFUN object begin()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+
+  MSetIterator mseti;
+  MSetIterator *mseti2;
+  struct object * o;
+
+  mseti = mset->begin();
+
+  mseti2 = new MSetIterator(mseti);
+
+  o = low_clone(MSetIterator_program);
+
+  OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+
+  push_object(o);    
+}
+
+PIKEFUN object end()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+
+  MSetIterator mseti;
+  MSetIterator *mseti2;
+  struct object * o;
+
+  mseti = mset->end();
+
+  mseti2 = new MSetIterator(mseti);
+
+  o = low_clone(MSetIterator_program);
+
+  OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+
+  push_object(o);    
+}
+
+PIKEFUN object back()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+
+  MSetIterator mseti;
+  MSetIterator *mseti2;
+  struct object * o;
+
+  mseti = mset->back();
+
+  mseti2 = new MSetIterator(mseti);
+
+  o = low_clone(MSetIterator_program);
+
+  OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+
+  push_object(o);    
 }
 
 PIKEFUN void fetch()
@@ -439,8 +722,6 @@ PIKEFUN int get_matches_estimated()
   push_int(i);
 }
 
-
-
 PIKEFUN int get_matches_upper_bound()
 {
   MSet  *mset;
@@ -462,7 +743,6 @@ PIKEFUN int get_firstitem()
 
   push_int(i);
 }
-
 
 PIKEFUN int get_matches_lower_bound()
 {
@@ -502,8 +782,8 @@ EXIT
   {
     MSet  *mset;
     mset = THIS->object_data->mset;
-    if(mset) delete mset;
-    free(THIS->object_data);
+//    if(mset) delete mset;
+    //free(THIS->object_data);
   }
 }
 
@@ -670,7 +950,7 @@ EXIT
   {   
     Database  *db;
     db = THIS->object_data->database;
-    free(THIS->object_data);
+    //free(THIS->object_data);
   }
 }
 
@@ -1056,7 +1336,7 @@ PIKEFUN void destroy()
 
     if(stem) 
     {
-      delete stem;
+    //  delete stem;
     }
 
 }
@@ -1069,7 +1349,7 @@ EXIT
     Stem  *stem;
     stem = THIS->object_data->stem;
     printf("shutting down!\n");
-    free(THIS->object_data);
+    //free(THIS->object_data);
   }
 }
 
@@ -1194,8 +1474,8 @@ EXIT
   {
     Enquire  *enquire;
     enquire = THIS->object_data->enquire;
-    if(enquire) delete enquire;
-    free(THIS->object_data);
+    // if(enquire) delete enquire;
+    //free(THIS->object_data);
   }
 }
 
@@ -1203,7 +1483,6 @@ EXIT
 
 /*! @endclass
  */
-
 
 
 

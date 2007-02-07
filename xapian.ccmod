@@ -604,12 +604,13 @@ PIKEFUN void create()
 PIKEFUN string stem_word(string word)
 {
   Stem  *stem;
-  stem = THIS->object_data->stem;
+  string foo;
   const string str((const char *)word->str, (size_t)word->len);
+  stem = THIS->object_data->stem;
 
-  str = stem->stem_word(str);
+  foo = stem->stem_word(str);
   pop_n_elems(args);
-  push_text(str.c_str());
+  push_text(foo.c_str());
 }
 
 PIKEFUN void get_description()

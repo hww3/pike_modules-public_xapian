@@ -117,6 +117,112 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+PIKEFUN string get_value(int val)
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  string str = doc->get_value(val);
+
+  pop_n_elems(args);
+
+  if(str)
+    push_text(str.c_str());
+  else 
+    push_int(0);
+}
+
+PIKEFUN void remove_value(int val)
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  doc->remove_value(val);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void add_term(string tname, int termcount)
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  string str(value->str, value->len);
+  
+  doc->add_term(str, termcount);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void add_posting(string tname, int termpos, int termcount)
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  string str(value->str, value->len);
+  
+  doc->add_term(str, termpos, termcount);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void remove_term(string tname)
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  string str(value->str, value->len);
+  
+  try
+  {
+    doc->remove_term(str);
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void add_value(int valueno, string value)
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+  string str(value->str, value->len);
+
+  doc->add_value(valueno, str);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN int termlist_count()
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+  unsigned int i;
+
+  i = doc->termlist_count();
+
+  push_int(i);
+
+  return;
+}
+
+PIKEFUN int values_count()
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+  unsigned int i;
+
+  i = doc->values_count();
+
+  push_int(i);
+
+  return;
+}
+
 
 INIT
 {

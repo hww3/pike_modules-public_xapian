@@ -159,7 +159,7 @@ PIKEFUN void add_posting(string tname, int termpos, int termcount)
   Document  *doc;
   doc = THIS->object_data->document;
 
-  string str(value->str, value->len);
+  string str(tname->str, tname->len);
   
   doc->add_term(str, termpos, termcount);
 
@@ -171,7 +171,7 @@ PIKEFUN void remove_term(string tname)
   Document  *doc;
   doc = THIS->object_data->document;
 
-  string str(value->str, value->len);
+  string str(tname->str, tname->len);
   
   try
   {

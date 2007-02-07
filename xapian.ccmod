@@ -42,8 +42,118 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    Query *query;
+} XAPIAN_QUERY_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
+
+
+/*! @class Document 
+ */
+
+PIKECLASS Query
+{
+
+CVAR XAPIAN_QUERY_OBJECT_DATA   *object_data;
+
+
+/*! @decl void create()
+ *!   Creates a new Public.Xapian.Query object
+ *!
+ */
+PIKEFUN void create()
+{
+  try
+  {
+    Query* document = new Query();
+
+    pop_n_elems(args);
+
+    THIS->object_data->Query = query;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN void create(string term, int wqf, int pos)
+{
+  try
+  {
+	string str((const char *)term->str, (size_t)term->len);
+    Query* document = new Query(str, (termcount)wqf, (termpos)pos);
+
+    pop_n_elems(args);
+
+    THIS->object_data->Query = query;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN int get_length()
+{
+  Query  *query;
+  query = THIS->object_data->query;
+  termcount i = query->get_length();
+
+  push_int(termcount);
+}
+
+PIKEFUN int empty()
+{
+  Query  *query;
+  query = THIS->object_data->query;
+  bool i = query->empty();
+
+  push_int(i?1:0);
+}
+
+
+PIKEFUN string get_description()
+{
+  Query  *query;
+  query = THIS->object_data->query;
+
+  string str = query->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_QUERY_OBJECT_DATA * dta = 
+	(XAPIAN_QUERY_OBJECT_DATA*)malloc(sizeof(XAPIAN_QUERY_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->query = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    Query  *query;
+    query = THIS->object_data->query;
+    if(query) delete query;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
 
 
 /*! @class Document 

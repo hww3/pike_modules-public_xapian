@@ -601,13 +601,13 @@ PIKEFUN void create()
     THIS->object_data->stem = stem;
 }
 
-PIKEFUN string `()(string word)
+PIKEFUN string stem_word(string word)
 {
   Stem  *stem;
   stem = THIS->object_data->stem;
   const string str((const char *)word->str, (size_t)word->len);
 
-  str = stem(str);
+  str = stem->stem_word(str);
   pop_n_elems(args);
   push_text(str.c_str());
 }

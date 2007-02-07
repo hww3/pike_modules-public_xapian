@@ -42,6 +42,11 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    Enquire *enquire;
+} XAPIAN_ENQUIRE_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     Query *query;
 } XAPIAN_QUERY_OBJECT_DATA;
 
@@ -51,7 +56,7 @@ extern "C" typedef struct
 } XAPIAN_DOCUMENT_OBJECT_DATA;
 
 
-/*! @class Document 
+/*! @class Query 
  */
 
 PIKECLASS Query
@@ -146,6 +151,73 @@ EXIT
     Query  *query;
     query = THIS->object_data->query;
     if(query) delete query;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
+/*! @class Enquire
+ */
+
+PIKECLASS Enquire
+{
+
+CVAR XAPIAN_ENQUIRE_OBJECT_DATA   *object_data;
+
+
+/*! @decl void create()
+ *!   Creates a new Public.Xapian.Query object
+ *!
+ */
+PIKEFUN void create()
+{
+  try
+  {
+    Enquire * enquire = new Enquire();
+
+    pop_n_elems(args);
+
+    THIS->object_data->enquire = enquire;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN string get_description()
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  string str = enquire->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_ENQUIRE_OBJECT_DATA * dta = 
+	(XAPIAN_ENQUIRE_OBJECT_DATA*)malloc(sizeof(XAPIAN_ENQUIRE_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->enquire = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    Enquire  *enquire;
+    enquire = THIS->object_data->enquire;
+    if(enquire) delete enquire;
     free(THIS->object_data);
   }
 }

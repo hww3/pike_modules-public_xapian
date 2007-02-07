@@ -23,16 +23,16 @@ using namespace std;
 
 #include <ctype.h>
 
+#define OBJ2_MSET(o) ((struct MSet_struct *)get_storage(o, MSet_program))
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
+#define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
+#define OBJ2_QUERY(o) ((struct Query_struct *)get_storage(o, Query_program))
 
-
-/*! @class Database
- */
 
 extern "C" struct program * Document_program;
 extern "C" typedef struct
 {
-    WritableDatabase *database;
+    Database *database;
 } XAPIAN_DATABASE_OBJECT_DATA;
 
 extern "C" typedef struct
@@ -49,6 +49,11 @@ extern "C" typedef struct
 {
     Query *query;
 } XAPIAN_QUERY_OBJECT_DATA;
+
+extern "C" typedef struct
+{
+    MSet *mset;
+} XAPIAN_MSET_OBJECT_DATA;
 
 extern "C" typedef struct
 {
@@ -159,74 +164,6 @@ EXIT
 
 /*! @endclass
  */
-
-/*! @class Enquire
- */
-
-PIKECLASS Enquire
-{
-
-CVAR XAPIAN_ENQUIRE_OBJECT_DATA   *object_data;
-
-
-/*! @decl void create()
- *!   Creates a new Public.Xapian.Query object
- *!
- */
-PIKEFUN void create()
-{
-  try
-  {
-    Enquire * enquire = new Enquire();
-
-    pop_n_elems(args);
-
-    THIS->object_data->enquire = enquire;
-  }
-
-  catch(...) 
-  {
-    Pike_error("an error occurred!\n");
-  }
-}
-
-PIKEFUN string get_description()
-{
-  Enquire  *enquire;
-  enquire = THIS->object_data->enquire;
-
-  string str = enquire->get_description();
-
-  push_text(str.c_str());
-}
-
-INIT
-{
-    XAPIAN_ENQUIRE_OBJECT_DATA * dta = 
-	(XAPIAN_ENQUIRE_OBJECT_DATA*)malloc(sizeof(XAPIAN_ENQUIRE_OBJECT_DATA));
-    if (!dta)
-        Pike_error("init_sample: Out of memory!\n");
-
-    dta->enquire = NULL;
-    THIS->object_data = dta;
-}
-
-EXIT 
-{
-  if(THIS->object_data)
-  {
-    Enquire  *enquire;
-    enquire = THIS->object_data->enquire;
-    if(enquire) delete enquire;
-    free(THIS->object_data);
-  }
-}
-
-}
-
-/*! @endclass
- */
-
 
 /*! @class Document 
  */
@@ -393,7 +330,7 @@ PIKEFUN int termlist_count()
 
   i = doc->termlist_count();
 
-  push_int(i);
+  push_int((INT_TYPE)i);
 
   return;
 }
@@ -406,7 +343,7 @@ PIKEFUN int values_count()
 
   i = doc->values_count();
 
-  push_int(i);
+  push_int((INT_TYPE)i);
 
   return;
 }
@@ -431,6 +368,141 @@ EXIT
     Document  *doc;
     doc = THIS->object_data->document;
     if(doc) delete doc;
+// hrm... odd.
+//    if(THIS->object_data)
+//      free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
+/*! @class MSet 
+ */
+
+PIKECLASS MSet
+{
+
+CVAR XAPIAN_MSET_OBJECT_DATA   *object_data;
+
+
+/*! @decl void create()
+ *!   Creates a new Public.Xapian.MSet object
+ *!
+ */
+PIKEFUN void create()
+{
+  try
+  {
+    MSet * mset = new MSet();
+
+    pop_n_elems(args);
+
+    THIS->object_data->mset = mset;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN void fetch()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+
+  mset->fetch();
+}
+
+PIKEFUN int size()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+  doccount i;
+
+  i = mset->size();
+
+  push_int(i);
+}
+
+PIKEFUN int get_matches_estimated()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+  doccount i;
+
+  i = mset->get_matches_estimated();
+
+  push_int(i);
+}
+
+
+
+PIKEFUN int get_matches_upper_bound()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+  doccount i;
+
+  i = mset->get_matches_upper_bound();
+
+  push_int(i);
+}
+
+PIKEFUN int get_firstitem()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+  doccount i;
+
+  i = mset->get_firstitem();
+
+  push_int(i);
+}
+
+
+PIKEFUN int get_matches_lower_bound()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+  doccount i;
+
+  i = mset->get_matches_lower_bound();
+
+  push_int(i);
+}
+
+PIKEFUN string get_description()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+
+  string str = mset->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_MSET_OBJECT_DATA * dta = 
+	(XAPIAN_MSET_OBJECT_DATA*)malloc(sizeof(XAPIAN_MSET_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->mset = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    MSet  *mset;
+    mset = THIS->object_data->mset;
+    if(mset) delete mset;
     free(THIS->object_data);
   }
 }
@@ -440,16 +512,179 @@ EXIT
 /*! @endclass
  */
 
+
+/*! @class Database
+ */
+
+PIKECLASS Database
+{
+CVAR XAPIAN_DATABASE_OBJECT_DATA   *object_data;
+
+PIKEFUN void create(string path)
+{
+  string str((const char *)path->str, (size_t)path->len);
+  Database * db = new Database(str);
+  THIS->object_data->database = db;
+
+  pop_n_elems(args);  
+}
+
+PIKEFUN void create()
+{
+  Database * db = new Database();
+
+  THIS->object_data->database = db;
+}
+
+PIKEFUN void reopen()
+{
+  Database * db = THIS->object_data->database;
+
+  db->reopen();
+}
+
+PIKEFUN void keep_alive()
+{
+  Database * db = THIS->object_data->database;
+
+  db->keep_alive();
+}
+
+
+PIKEFUN int get_doclength(int did)
+{
+  Database  *db;
+  db = THIS->object_data->database;
+
+  doclength i = db->get_doclength((docid)did);
+  pop_n_elems(args);
+  push_int((INT_TYPE)i);
+}
+
+PIKEFUN int get_doccount()
+{
+  Database  *db;
+  db = THIS->object_data->database;
+
+  doccount i = db->get_doccount();
+  push_int(i);
+}
+
+PIKEFUN int get_avlength()
+{
+  Database  *db;
+  db = THIS->object_data->database;
+
+  doclength i = db->get_avlength();
+  push_int((INT_TYPE)i);
+}
+
+PIKEFUN int get_lastdocid()
+{
+  Database  *db;
+  db = THIS->object_data->database;
+
+  docid i = db->get_lastdocid();
+  push_int((INT_TYPE)i);
+}
+
+
+PIKEFUN int has_positions()
+{
+  Database  *db;
+  db = THIS->object_data->database;
+
+  bool i = db->has_positions();
+
+  push_int(i?1:0);
+}
+
+PIKEFUN object get_document(int id)
+{
+  Database  *db;
+  Document doc;
+  struct object * obj;
+  struct Document_struct * od;
+
+  db = (Database*)THIS->object_data->database;
+
+  try
+  {
+    doc = db->get_document((docid)id);
+  }
+
+  catch(DocNotFoundError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("DocumentNotFoundError\n");
+  }
+
+  pop_n_elems(args);
+
+  obj = low_clone(Document_program);
+
+  od = OBJ2_DOCUMENT(obj);
+
+  od->object_data->document = new Document(doc);
+    
+  push_object(obj);
+
+}
+
+PIKEFUN string get_description()
+{
+  Database  *db;
+  db = THIS->object_data->database;
+
+  string str = db->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_DATABASE_OBJECT_DATA * dta = 
+	(XAPIAN_DATABASE_OBJECT_DATA*)malloc(sizeof(XAPIAN_DATABASE_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->database = NULL;
+    THIS->object_data = dta;
+}
+
+PIKEFUN void destroy()
+{
+    Database  *db;
+    db = THIS->object_data->database;
+
+    if(db) 
+    {
+      printf("deleting db\n");
+      delete db;
+    }
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {   
+    Database  *db;
+    db = THIS->object_data->database;
+    free(THIS->object_data);
+  }
+}
+
+}
+
 /*! @class WriteableDatabase
  */
 
 PIKECLASS WriteableDatabase
 {
-CVAR XAPIAN_DATABASE_OBJECT_DATA   *object_data;
-
+INHERIT Database;
 
 /*! @decl void create(string appname)
- *!   Creates a new Public.Xapian.Database object
+ *!   Creates a new Public.Xapian.WriteableDatabase object
  *!
  */
 PIKEFUN void create(string path, int mode)
@@ -482,7 +717,7 @@ PIKEFUN void create(string path, int mode)
 PIKEFUN void flush()
 {
   WritableDatabase  *db;
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
 
   try
   {
@@ -502,38 +737,6 @@ PIKEFUN void flush()
   }
 }
 
-PIKEFUN object get_document(int id)
-{
-  WritableDatabase  *db;
-  Document doc;
-  struct object * obj;
-  struct Document_struct * od;
-
-  db = THIS->object_data->database;
-
-  try
-  {
-    doc = db->get_document((docid)id);
-  }
-
-  catch(DocNotFoundError &e)
-  {
-    pop_n_elems(args);
-    Pike_error("DocumentNotFoundError\n");
-  }
-
-  pop_n_elems(args);
-
-  obj = low_clone(Document_program);
-
-  od = OBJ2_DOCUMENT(obj);
-
-  od->object_data->document = new Document(doc);
-    
-  push_object(obj);
-
-}
-
 PIKEFUN int add_document(object document)
 {
   WritableDatabase  *db;
@@ -542,7 +745,7 @@ PIKEFUN int add_document(object document)
 
   struct Document_struct * od;
 
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
   od = OBJ2_DOCUMENT(document);
 
   if(!od) Pike_error("Not a Document!\n");
@@ -575,7 +778,7 @@ PIKEFUN void replace_document(int did, object document)
 
   struct Document_struct * od;
 
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
   od = OBJ2_DOCUMENT(document);
 
   if(!od) Pike_error("Not a Document!\n");
@@ -606,7 +809,7 @@ PIKEFUN void replace_document(string term, object document)
   string str;
   struct Document_struct * od;
 
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
   od = OBJ2_DOCUMENT(document);
 
   if(!od) Pike_error("Not a Document!\n");
@@ -634,7 +837,7 @@ PIKEFUN void replace_document(string term, object document)
 PIKEFUN void delete_document(string unique_term)
 {
   WritableDatabase  *db;
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
   const string str((const char *)unique_term->str, (size_t)unique_term->len);
   pop_n_elems(args);
 
@@ -656,7 +859,7 @@ PIKEFUN void delete_document(string unique_term)
 PIKEFUN void delete_document(int did)
 {
   WritableDatabase  *db;
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
 
   try
   {
@@ -679,7 +882,7 @@ PIKEFUN void delete_document(int did)
 PIKEFUN void begin_transaction(int flushed)
 {
   WritableDatabase  *db;
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
 
   try
   {
@@ -701,7 +904,7 @@ PIKEFUN void begin_transaction(int flushed)
 PIKEFUN void commit_transaction()
 {
   WritableDatabase  *db;
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
 
   try
   {
@@ -729,7 +932,7 @@ PIKEFUN void commit_transaction()
 PIKEFUN void cancel_transaction()
 {
   WritableDatabase  *db;
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
 
   try
   {
@@ -754,51 +957,14 @@ PIKEFUN void cancel_transaction()
 
 }
 
-PIKEFUN void get_description()
+PIKEFUN string get_description()
 {
   WritableDatabase  *db;
-  db = THIS->object_data->database;
+  db = (WritableDatabase*)THIS->object_data->database;
 
   string str = db->get_description();
 
   push_text(str.c_str());
-}
-
-INIT
-{
-    XAPIAN_DATABASE_OBJECT_DATA * dta = 
-	(XAPIAN_DATABASE_OBJECT_DATA*)malloc(sizeof(XAPIAN_DATABASE_OBJECT_DATA));
-    if (!dta)
-        Pike_error("init_sample: Out of memory!\n");
-
-    dta->database = NULL;
-    THIS->object_data = dta;
-}
-
-PIKEFUN void destroy()
-{
-
-    WritableDatabase  *db;
-    db = THIS->object_data->database;
-
-    if(db) 
-    {
-      printf("deleting db\n");
-      delete db;
-    }
-
-}
-
-EXIT 
-{
-  if(THIS->object_data)
-  {
-    
-    WritableDatabase  *db;
-    db = THIS->object_data->database;
-    printf("shutting down!\n");
-    free(THIS->object_data);
-  }
 }
 
 }
@@ -861,7 +1027,7 @@ PIKEFUN string stem_word(string word)
   push_text(foo.c_str());
 }
 
-PIKEFUN void get_description()
+PIKEFUN string get_description()
 {
   Stem  *stem;
   stem = THIS->object_data->stem;
@@ -908,6 +1074,138 @@ EXIT
 }
 
 }
+
+/*! @class Enquire
+ */
+
+PIKECLASS Enquire
+{
+
+CVAR XAPIAN_ENQUIRE_OBJECT_DATA   *object_data;
+
+
+/*! @decl void create()
+ *!   Creates a new Public.Xapian.Query object
+ *!
+ */
+PIKEFUN void create(object database)
+{
+  try
+  {
+    Database * db;
+    db = OBJ2_DATABASE(database)->object_data->database;
+
+    Enquire * enquire = new Enquire(*db);
+
+    pop_n_elems(args);
+
+    THIS->object_data->enquire = enquire;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN void set_query(object query, int termcount)
+{
+  Query * q;
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  q = OBJ2_QUERY(query)->object_data->query;
+
+  enquire->set_query(*q, (Xapian::termcount)termcount);
+  pop_n_elems(args);  
+}
+
+PIKEFUN object get_query()
+{
+  Enquire  *enquire;
+  Query q;
+  Query * q2;
+  struct object* r;
+  enquire = THIS->object_data->enquire;
+
+  q = enquire->get_query();  
+
+  q2 = new Query(q);  
+
+  r = low_clone(Query_program);
+
+  OBJ2_QUERY(r)->object_data->query = q2;
+
+  push_object(r);
+}
+
+PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+  MSet mset;
+  struct object * o;
+
+  try
+  {
+    mset = enquire->get_mset((doccount)first, (doccount)maxitems, 
+           (doccount)checkatleast);
+
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }  
+
+  pop_n_elems(args);
+
+  o = low_clone(MSet_program);
+
+  OBJ2_MSET(o)->object_data->mset = new MSet(mset);
+
+  push_object(o);
+}
+
+PIKEFUN string get_description()
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  string str = enquire->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_ENQUIRE_OBJECT_DATA * dta = 
+	(XAPIAN_ENQUIRE_OBJECT_DATA*)malloc(sizeof(XAPIAN_ENQUIRE_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->enquire = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    Enquire  *enquire;
+    enquire = THIS->object_data->enquire;
+    if(enquire) delete enquire;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
+
+
 
 INIT
 {

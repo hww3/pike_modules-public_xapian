@@ -161,7 +161,7 @@ PIKEFUN void add_posting(string tname, int termpos, int termcount)
 
   string str(tname->str, tname->len);
   
-  doc->add_term(str, (unsigned int)termpos, (unsigned int)termcount);
+  doc->add_posting(str, (unsigned int)termpos, (unsigned int)termcount);
 
   pop_n_elems(args);
 }

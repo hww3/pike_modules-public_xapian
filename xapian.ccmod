@@ -1,46 +1,131 @@
 /*! @module Public
  */
 
-/*! @module Sample
+/*! @module Xapian
  */
 
 #define _GNU_SOURCE
 
-#include "sample_config.h"
+extern "C" {
+#include "xapian_config.h"
 #include "util.h"
 
+}
 
-/*! @class Sample
+#include <xapian.h>
+
+#include <algorithm>
+#include <iostream>
+#include <string>
+
+using namespace Xapian;
+using namespace std;
+
+#include <ctype.h>
+
+#define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
+
+/*! @class Database
  */
 
-PIKECLASS Sample
+extern "C" struct program * Document_program;
+extern "C" typedef struct
+{
+    WritableDatabase *database;
+} XAPIAN_DATABASE_OBJECT_DATA;
+
+extern "C" typedef struct
+{
+    Document *document;
+} XAPIAN_DOCUMENT_OBJECT_DATA;
+
+
+/*! @class Document 
+ */
+
+PIKECLASS Document
 {
 
-typedef struct
-{
-    int started;
-} SAMPLE_OBJECT_DATA;
-
-CVAR SAMPLE_OBJECT_DATA   *object_data;
+CVAR XAPIAN_DOCUMENT_OBJECT_DATA   *object_data;
 
 
-/*! @decl void create(string appname)
- *!   Creates a new Public.Sample.Sample object
+/*! @decl void create()
+ *!   Creates a new Public.Xapian.Document object
  *!
  */
-PIKEFUN void create(string appname)
+PIKEFUN void create()
 {
+  try
+  {
+    Document* document = new Document();
+
+    pop_n_elems(args);
+
+    THIS->object_data->document = document;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN void set_data(string data)
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+  string str((const char *)data->str, (size_t)data->len);
+
+  doc->set_data(str);  
+
   pop_n_elems(args);
+}
+
+PIKEFUN void clear_terms()
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  doc->clear_terms();
+}
+
+PIKEFUN void clear_values()
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  doc->clear_values();
+}
+
+PIKEFUN string get_data()
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  string str = doc->get_data();
+
+  push_text(str.c_str());
+}
+
+PIKEFUN string get_description()
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  string str = doc->get_description();
+
+  push_text(str.c_str());
 }
 
 
 INIT
 {
-    SAMPLE_OBJECT_DATA * dta = 
-	(SAMPLE_OBJECT_DATA*)malloc(sizeof(SAMPLE_OBJECT_DATA));
+    XAPIAN_DOCUMENT_OBJECT_DATA * dta = 
+	(XAPIAN_DOCUMENT_OBJECT_DATA*)malloc(sizeof(XAPIAN_DOCUMENT_OBJECT_DATA));
     if (!dta)
         Pike_error("init_sample: Out of memory!\n");
 
+    dta->document = NULL;
     THIS->object_data = dta;
 }
 
@@ -48,6 +133,10 @@ EXIT
 {
   if(THIS->object_data)
   {
+    
+    Document  *doc;
+    doc = THIS->object_data->document;
+    if(doc) delete doc;
     free(THIS->object_data);
   }
 }
@@ -56,6 +145,305 @@ EXIT
 
 /*! @endclass
  */
+
+PIKECLASS Database
+{
+CVAR XAPIAN_DATABASE_OBJECT_DATA   *object_data;
+
+
+/*! @decl void create(string appname)
+ *!   Creates a new Public.Xapian.Database object
+ *!
+ */
+PIKEFUN void create(string path)
+{
+  try
+  {
+    const string str((const char *)path->str, (size_t)path->len);
+
+    WritableDatabase* database = new WritableDatabase(str, DB_CREATE_OR_OPEN);
+
+    pop_n_elems(args);
+
+    THIS->object_data->database = database;
+  }
+
+  catch(DatabaseLockError &e)
+  {
+    Pike_error("DatabaseLockError\n");
+  }
+  catch(DatabaseOpeningError &e) 
+  {
+    Pike_error("DatabaseOpeningError\n");
+  }
+  catch(InvalidArgumentError &e) 
+  {
+    Pike_error("InvalidArgumentError\n");
+  }
+}
+
+PIKEFUN void flush()
+{
+  WritableDatabase  *db;
+  db = THIS->object_data->database;
+
+  try
+  {
+    db->flush();
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseLockError &e)
+  {
+    Pike_error("DatabaseLockError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    Pike_error("DatabaseError\n");
+  }
+}
+
+PIKEFUN object get_document(int id)
+{
+  WritableDatabase  *db;
+  Document doc;
+  struct object * obj;
+  struct Document_struct * od;
+
+  db = THIS->object_data->database;
+
+  try
+  {
+
+    doc = db->get_document((docid)id);
+  }
+
+  catch(DocNotFoundError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("DocumentNotFoundError\n");
+  }
+
+  pop_n_elems(args);
+
+  obj = low_clone(Document_program);
+
+  od = OBJ2_DOCUMENT(obj);
+
+  od->object_data->document = &doc;
+    
+  push_object(obj);
+}
+
+PIKEFUN int add_document(object document)
+{
+  WritableDatabase  *db;
+  Document * doc;
+  docid id;
+
+  struct Document_struct * od;
+
+  db = THIS->object_data->database;
+  od = OBJ2_DOCUMENT(document);
+
+  if(!od) Pike_error("Not a Document!\n");
+
+  doc = od->object_data->document;
+
+  try
+  {
+    id = db->add_document(*doc);
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    Pike_error("DatabaseError\n");
+  }
+
+  pop_n_elems(args);
+  push_int(id);  
+}
+
+PIKEFUN void delete_document(string unique_term)
+{
+  WritableDatabase  *db;
+  db = THIS->object_data->database;
+  const string str((const char *)unique_term->str, (size_t)unique_term->len);
+  pop_n_elems(args);
+
+  try
+  {
+    db->delete_document(str);
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    Pike_error("DatabaseError\n");
+  }
+
+}
+
+PIKEFUN void delete_document(int did)
+{
+  WritableDatabase  *db;
+  db = THIS->object_data->database;
+
+  try
+  {
+    db->delete_document((docid)did);
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("DatabaseError\n");
+  }
+
+}
+
+
+PIKEFUN void begin_transaction(int flushed)
+{
+  WritableDatabase  *db;
+  db = THIS->object_data->database;
+
+  try
+  {
+    db->begin_transaction((bool)flushed);
+  }
+  catch(Xapian::InvalidOperationError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidOperationError\n");
+  }
+  catch(Xapian::UnimplementedError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("UnimplementedError\n");
+  }
+
+}
+
+PIKEFUN void commit_transaction()
+{
+  WritableDatabase  *db;
+  db = THIS->object_data->database;
+
+  try
+  {
+    db->commit_transaction();
+  }
+  catch(Xapian::InvalidOperationError &e)
+  {
+    Pike_error("InvalidOperationError\n");
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    Pike_error("DatabaseError\n");
+  }
+  catch(Xapian::UnimplementedError &e)
+  {
+    Pike_error("UnimplementedError\n");
+  }
+
+}
+
+PIKEFUN void cancel_transaction()
+{
+  WritableDatabase  *db;
+  db = THIS->object_data->database;
+
+  try
+  {
+    db->cancel_transaction();
+  }
+  catch(Xapian::InvalidOperationError &e)
+  {
+    Pike_error("InvalidOperationError\n");
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    Pike_error("DatabaseError\n");
+  }
+  catch(Xapian::UnimplementedError &e)
+  {
+    Pike_error("UnimplementedError\n");
+  }
+
+}
+
+PIKEFUN void get_description()
+{
+  WritableDatabase  *db;
+  db = THIS->object_data->database;
+
+  string str = db->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_DATABASE_OBJECT_DATA * dta = 
+	(XAPIAN_DATABASE_OBJECT_DATA*)malloc(sizeof(XAPIAN_DATABASE_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->database = NULL;
+    THIS->object_data = dta;
+}
+
+PIKEFUN void destroy()
+{
+
+    WritableDatabase  *db;
+    db = THIS->object_data->database;
+
+    if(db) 
+    {
+      printf("deleting db\n");
+      delete db;
+    }
+
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    
+    WritableDatabase  *db;
+    db = THIS->object_data->database;
+    printf("shutting down!\n");
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
 
 /*! @endmodule
  */

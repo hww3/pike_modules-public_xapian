@@ -384,6 +384,71 @@ PIKEFUN int add_document(object document)
   push_int(id);  
 }
 
+
+PIKEFUN void replace_document(int did, object document)
+{
+  WritableDatabase  *db;
+  Document * doc;
+  docid id;
+
+  struct Document_struct * od;
+
+  db = THIS->object_data->database;
+  od = OBJ2_DOCUMENT(document);
+
+  if(!od) Pike_error("Not a Document!\n");
+
+  doc = od->object_data->document;
+
+  try
+  {
+    db->replace_document((unsigned int)did, *doc);
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    Pike_error("DatabaseError\n");
+  }
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void replace_document(string term, object document)
+{
+  WritableDatabase  *db;
+  Document * doc;
+  docid id;
+  string str;
+  struct Document_struct * od;
+
+  db = THIS->object_data->database;
+  od = OBJ2_DOCUMENT(document);
+
+  if(!od) Pike_error("Not a Document!\n");
+
+
+  doc = od->object_data->document;
+
+  try
+  {
+    const string str((const char *)term->str, (size_t)term->len);
+    db->replace_document(str, *doc);
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    Pike_error("DatabaseError\n");
+  }
+
+  pop_n_elems(args);
+}
+
 PIKEFUN void delete_document(string unique_term)
 {
   WritableDatabase  *db;

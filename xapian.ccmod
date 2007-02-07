@@ -36,6 +36,11 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    Stem *stem;
+} XAPIAN_STEM_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
 
@@ -252,7 +257,10 @@ EXIT
 /*! @endclass
  */
 
-PIKECLASS Database
+/*! @class WriteableDatabase
+ */
+
+PIKECLASS WriteableDatabase
 {
 CVAR XAPIAN_DATABASE_OBJECT_DATA   *object_data;
 
@@ -261,13 +269,13 @@ CVAR XAPIAN_DATABASE_OBJECT_DATA   *object_data;
  *!   Creates a new Public.Xapian.Database object
  *!
  */
-PIKEFUN void create(string path)
+PIKEFUN void create(string path, int mode)
 {
   try
   {
     const string str((const char *)path->str, (size_t)path->len);
 
-    WritableDatabase* database = new WritableDatabase(str, DB_CREATE_OR_OPEN);
+    WritableDatabase* database = new WritableDatabase(str, mode);
 
     pop_n_elems(args);
 
@@ -540,6 +548,111 @@ EXIT
     
     WritableDatabase  *db;
     db = THIS->object_data->database;
+    printf("shutting down!\n");
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
+/*! @class Stem
+ */
+
+PIKECLASS Stem
+{
+CVAR XAPIAN_STEM_OBJECT_DATA   *object_data;
+
+
+/*! @decl void create(string language)
+ *! @decl void create()
+ *!   Creates a new Public.Xapian.Stem object
+ *!
+ */
+PIKEFUN void create(string language)
+{
+  Stem* stem;
+  const string str((const char *)language->str, (size_t)language->len);
+
+  try
+  {
+    stem = new Stem(str);
+  }
+
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }
+
+  pop_n_elems(args);
+
+  THIS->object_data->stem = stem;
+}
+
+PIKEFUN void create()
+{
+    Stem* stem = new Stem();
+
+    pop_n_elems(args);
+
+    THIS->object_data->stem = stem;
+}
+
+PIKEFUN string `()(string word)
+{
+  Stem  *stem;
+  stem = THIS->object_data->stem;
+  const string str((const char *)word->str, (size_t)word->len);
+
+  str = stem(str);
+  pop_n_elems(args);
+  push_text(str.c_str());
+}
+
+PIKEFUN void get_description()
+{
+  Stem  *stem;
+  stem = THIS->object_data->stem;
+
+  string str = stem->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_STEM_OBJECT_DATA * dta = 
+	(XAPIAN_STEM_OBJECT_DATA*)malloc(sizeof(XAPIAN_STEM_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->stem = NULL;
+    THIS->object_data = dta;
+}
+
+PIKEFUN void destroy()
+{
+
+    Stem  *stem;
+    stem = THIS->object_data->stem;
+
+    if(stem) 
+    {
+      delete stem;
+    }
+
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+
+    Stem  *stem;
+    stem = THIS->object_data->stem;
     printf("shutting down!\n");
     free(THIS->object_data);
   }

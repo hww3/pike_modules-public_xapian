@@ -68,11 +68,11 @@ PIKEFUN void create()
 {
   try
   {
-    Query* document = new Query();
+    Query* query = new Query();
 
     pop_n_elems(args);
 
-    THIS->object_data->Query = query;
+    THIS->object_data->query = query;
   }
 
   catch(...) 
@@ -86,11 +86,11 @@ PIKEFUN void create(string term, int wqf, int pos)
   try
   {
 	string str((const char *)term->str, (size_t)term->len);
-    Query* document = new Query(str, (termcount)wqf, (termpos)pos);
+    Query* query = new Query(str, (termcount)wqf, (termpos)pos);
 
     pop_n_elems(args);
 
-    THIS->object_data->Query = query;
+    THIS->object_data->query = query;
   }
 
   catch(...) 
@@ -105,7 +105,7 @@ PIKEFUN int get_length()
   query = THIS->object_data->query;
   termcount i = query->get_length();
 
-  push_int(termcount);
+  push_int(i);
 }
 
 PIKEFUN int empty()

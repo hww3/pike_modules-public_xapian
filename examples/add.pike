@@ -1,0 +1,26 @@
+import Public.Xapian;
+
+
+int main(int argc, array argv)
+{
+  object database = WriteableDatabase(argv[1], DB_CREATE_OR_OPEN);
+
+  string doc = Stdio.read_file(argv[2]);
+  doc = replace(doc, ({"\t", "\r", "\n"}), ({" ", " ", " "}));
+
+  array terms = (doc / " ") - ({""});
+
+  object s = Stem("english");
+  object d = Document();
+
+  foreach(terms; int i; string term)
+  {
+    d->add_posting(s->stem_word(lower_case(term)), i, 1);
+  }
+
+  d->set_data(argv[2]);
+
+  database->add_document(d);
+  database = 0;
+  return 0;
+}

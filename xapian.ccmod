@@ -24,6 +24,7 @@ using namespace std;
 #include <ctype.h>
 
 #define OBJ2_MSET(o) ((struct MSet_struct *)get_storage(o, MSet_program))
+#define OBJ2_STEM(o) ((struct Stem_struct *)get_storage(o, Stem_program))
 #define OBJ2_MSETITERATOR(o) ((struct MSetIterator_struct *)get_storage(o, MSetIterator_program))
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
 #define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
@@ -33,6 +34,7 @@ using namespace std;
 extern "C" struct program * Document_program;
 extern "C" struct program * MSetIterator_program;
 extern "C" struct program * MSet_program;
+extern "C" struct program * Stem_program;
 extern "C" typedef struct
 {
     Database *database;
@@ -42,6 +44,11 @@ extern "C" typedef struct
 {
     Stem *stem;
 } XAPIAN_STEM_OBJECT_DATA;
+
+extern "C" typedef struct
+{
+    QueryParser *parser;
+} XAPIAN_QUERYPARSER_OBJECT_DATA;
 
 extern "C" typedef struct
 {
@@ -69,7 +76,111 @@ extern "C" typedef struct
 } XAPIAN_DOCUMENT_OBJECT_DATA;
 
 
+/*! @class Stem
+ */
 
+PIKECLASS Stem
+{
+CVAR XAPIAN_STEM_OBJECT_DATA   *object_data;
+
+
+/*! @decl void create(string language)
+ *! @decl void create()
+ *!   Creates a new Public.Xapian.Stem object
+ *!
+ */
+PIKEFUN void create(string language)
+{
+  Stem* stem;
+  const string str((const char *)language->str, (size_t)language->len);
+
+  try
+  {
+    stem = new Stem(str);
+  }
+
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }
+
+  pop_n_elems(args);
+
+  THIS->object_data->stem = stem;
+}
+
+PIKEFUN void create()
+{
+    Stem* stem = new Stem();
+
+    pop_n_elems(args);
+
+    THIS->object_data->stem = stem;
+}
+
+PIKEFUN string stem_word(string word)
+{
+  Stem  *stem;
+  string foo;
+  const string str((const char *)word->str, (size_t)word->len);
+  stem = THIS->object_data->stem;
+
+  foo = stem->stem_word(str);
+  pop_n_elems(args);
+  push_text(foo.c_str());
+}
+
+PIKEFUN string get_description()
+{
+  Stem  *stem;
+  stem = THIS->object_data->stem;
+
+  string str = stem->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_STEM_OBJECT_DATA * dta = 
+	(XAPIAN_STEM_OBJECT_DATA*)malloc(sizeof(XAPIAN_STEM_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->stem = NULL;
+    THIS->object_data = dta;
+}
+
+PIKEFUN void destroy()
+{
+
+    Stem  *stem;
+    stem = THIS->object_data->stem;
+
+    if(stem) 
+    {
+    //  delete stem;
+    }
+
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+
+    Stem  *stem;
+    stem = THIS->object_data->stem;
+    printf("shutting down!\n");
+    //free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
 
 /*! @class Query 
  */
@@ -793,6 +904,125 @@ EXIT
  */
 
 
+/*! @class QueryParser
+ */
+
+PIKECLASS QueryParser
+{
+CVAR XAPIAN_QUERYPARSER_OBJECT_DATA   *object_data;
+
+PIKEFUN void create()
+{
+  QueryParser * parser = new QueryParser();
+
+  THIS->object_data->parser = parser;
+}
+
+PIKEFUN void set_stemmer(object stemmer)
+{
+  QueryParser * parser;
+  Stem * s;
+
+  parser = THIS->object_data->parser;
+  s = OBJ2_STEM(stemmer)->object_data->stem; 
+  parser->set_stemmer((const Stem)*s);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void set_default_op(int op)
+{
+  QueryParser * parser;
+
+  parser = THIS->object_data->parser;
+
+  parser->set_default_op((Query::op)op);
+  pop_n_elems(args);
+}
+
+PIKEFUN object parse_query(string query, int flags)
+{
+  Query q;
+  Query * q1;
+  QueryParser *parser;
+  struct object *o;
+  parser = THIS->object_data->parser;
+
+  string str((const char *)query->str, (size_t)query->len);
+
+  q = parser->parse_query(str, flags);
+
+  q1 = new Query(q);  
+
+  o = low_clone(Query_program);
+
+  OBJ2_QUERY(o)->object_data->query = q1;
+  pop_n_elems(args);
+  push_object(o);
+}
+
+PIKEFUN void add_prefix(string field, string prefix)
+{
+  QueryParser *parser;
+  parser = THIS->object_data->parser;
+  
+  string f((const char *)field->str, (size_t)field->len);
+  string p((const char *)prefix->str, (size_t)prefix->len);
+
+  parser->add_prefix(f, p);
+  pop_n_elems(args);
+}
+
+PIKEFUN void add_boolean_prefix(string field, string prefix)
+{
+  QueryParser *parser;
+  parser = THIS->object_data->parser;
+  
+  string f((const char *)field->str, (size_t)field->len);
+  string p((const char *)prefix->str, (size_t)prefix->len);
+
+  parser->add_boolean_prefix(f, p);
+  pop_n_elems(args);
+}
+
+PIKEFUN string get_description()
+{
+  QueryParser *parser;
+  parser = THIS->object_data->parser;
+
+  string str = parser->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_QUERYPARSER_OBJECT_DATA * dta = 
+	(XAPIAN_QUERYPARSER_OBJECT_DATA*)malloc(sizeof(XAPIAN_QUERYPARSER_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->parser = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    QueryParser  *parser;
+    parser = THIS->object_data->parser;
+//    if(parser) delete parser;
+    //free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
+
 /*! @class Database
  */
 
@@ -1252,108 +1482,6 @@ PIKEFUN string get_description()
 /*! @endclass
  */
 
-/*! @class Stem
- */
-
-PIKECLASS Stem
-{
-CVAR XAPIAN_STEM_OBJECT_DATA   *object_data;
-
-
-/*! @decl void create(string language)
- *! @decl void create()
- *!   Creates a new Public.Xapian.Stem object
- *!
- */
-PIKEFUN void create(string language)
-{
-  Stem* stem;
-  const string str((const char *)language->str, (size_t)language->len);
-
-  try
-  {
-    stem = new Stem(str);
-  }
-
-  catch(InvalidArgumentError &e)
-  {
-    pop_n_elems(args);
-    Pike_error("InvalidArgumentError\n");
-  }
-
-  pop_n_elems(args);
-
-  THIS->object_data->stem = stem;
-}
-
-PIKEFUN void create()
-{
-    Stem* stem = new Stem();
-
-    pop_n_elems(args);
-
-    THIS->object_data->stem = stem;
-}
-
-PIKEFUN string stem_word(string word)
-{
-  Stem  *stem;
-  string foo;
-  const string str((const char *)word->str, (size_t)word->len);
-  stem = THIS->object_data->stem;
-
-  foo = stem->stem_word(str);
-  pop_n_elems(args);
-  push_text(foo.c_str());
-}
-
-PIKEFUN string get_description()
-{
-  Stem  *stem;
-  stem = THIS->object_data->stem;
-
-  string str = stem->get_description();
-
-  push_text(str.c_str());
-}
-
-INIT
-{
-    XAPIAN_STEM_OBJECT_DATA * dta = 
-	(XAPIAN_STEM_OBJECT_DATA*)malloc(sizeof(XAPIAN_STEM_OBJECT_DATA));
-    if (!dta)
-        Pike_error("init_sample: Out of memory!\n");
-
-    dta->stem = NULL;
-    THIS->object_data = dta;
-}
-
-PIKEFUN void destroy()
-{
-
-    Stem  *stem;
-    stem = THIS->object_data->stem;
-
-    if(stem) 
-    {
-    //  delete stem;
-    }
-
-}
-
-EXIT 
-{
-  if(THIS->object_data)
-  {
-
-    Stem  *stem;
-    stem = THIS->object_data->stem;
-    printf("shutting down!\n");
-    //free(THIS->object_data);
-  }
-}
-
-}
 
 /*! @class Enquire
  */

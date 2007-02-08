@@ -17,6 +17,7 @@ extern "C" {
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace Xapian;
 using namespace std;
@@ -52,6 +53,11 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    Stopper *stopper;
+} XAPIAN_STOPPER_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     Enquire *enquire;
 } XAPIAN_ENQUIRE_OBJECT_DATA;
 
@@ -75,6 +81,125 @@ extern "C" typedef struct
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
 
+
+/*! @class Stopper
+ */
+
+PIKECLASS Stopper
+{
+CVAR XAPIAN_STOPPER_OBJECT_DATA   *object_data;
+
+PIKEFUN int `()(string word)
+{
+  Stopper  *stopper;
+  bool i;
+  stopper = THIS->object_data->stopper;
+  string str((const char *)word->str, (size_t)word->len);
+
+  i = (*stopper)(str);  
+
+  push_int(i?1:0);
+}
+
+PIKEFUN string get_description()
+{
+  Stopper  *stopper;
+  stopper = THIS->object_data->stopper;
+
+  string str = stopper->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_STOPPER_OBJECT_DATA * dta = 
+	(XAPIAN_STOPPER_OBJECT_DATA*)malloc(sizeof(XAPIAN_STOPPER_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->stopper = NULL;
+    THIS->object_data = dta;
+}
+
+PIKEFUN void destroy()
+{
+
+    Stopper  *stopper;
+    stopper = THIS->object_data->stopper;
+
+    if(stopper) 
+    {
+     delete stopper;
+    }
+
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+
+    Stopper  *stopper;
+    stopper = THIS->object_data->stopper;
+    printf("shutting down!\n");
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
+/*! @class SimpleStopper
+ */
+
+PIKECLASS SimpleStopper
+{
+  INHERIT Stopper;
+
+  PIKEFUN void create()
+  {
+    SimpleStopper * stopper = new SimpleStopper();
+
+    THIS->object_data->stopper = (Stopper*) stopper;
+    pop_n_elems(args);
+  }
+
+  PIKEFUN void create(array words)
+  {
+    int i;
+    vector<string> v;
+
+    for(i = 0; i < words->size; i++)
+    {  
+       string str((const char *)(ITEM(words)[i].u.string->str), 
+                  (size_t)(ITEM(words)[i].u.string->len));
+       v.push_back(str);
+    }
+    
+    SimpleStopper * stopper = new SimpleStopper(v.begin(), v.end());
+
+    THIS_STOPPER->object_data->stopper = (Stopper*) stopper;
+    pop_n_elems(args);
+  }
+
+  PIKEFUN void add(string word)
+  {
+    SimpleStopper * stopper;
+    string str((const char*)word->str, (size_t)word->len);
+    stopper = (SimpleStopper *)THIS_STOPPER->object_data->stopper;
+    stopper->add(str);
+    pop_stack();
+    
+  }
+
+  
+}
+
+/*! @endclass
+ */
 
 /*! @class Stem
  */
@@ -483,9 +608,19 @@ PIKEFUN void add_posting(string tname, int termpos, int termcount)
   doc = THIS->object_data->document;
 
   string str(tname->str, tname->len);
-  
-  doc->add_posting(str, (unsigned int)termpos, (unsigned int)termcount);
 
+  try 
+  {  
+
+    doc->add_posting(str, (unsigned int)termpos, (unsigned int)termcount);
+  }
+
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error(e.get_msg().c_str());
+  }
+  
   pop_n_elems(args);
 }
 

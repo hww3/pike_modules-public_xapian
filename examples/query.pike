@@ -21,7 +21,7 @@ int main(int argc, array argv)
 
   for(i = mset->begin(); i != mset->end(); i->next())
   {
-    werror(i->get_document()->get_data()  + "\n");
+    werror(i->get_percent() + "%: " + i->get_document()->get_data()  + "\n");
   }
 
   return 0;

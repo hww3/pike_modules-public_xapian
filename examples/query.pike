@@ -24,5 +24,5 @@ int main(int argc, array argv)
     werror(i->get_document()->get_data()  + "\n");
   }
 
-  return -1;
+  return 0;
 }

@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.2 2007-02-09 06:23:45 hww3 Exp $
+# $Id: Makefile.in,v 1.3 2007-02-09 06:33:56 hww3 Exp $
 @make_variables@
 VPATH=@srcdir@:@srcdir@/../..:../..
 
@@ -65,12 +65,12 @@ pmar:  verify
 
 release: verify
 	cvs rtag -D now RELEASE_1_${MIN} pike_modules/${MODULE_DIR_NAME}
-	${MAKE} pmar RELEASE=${MIN}
+#	${MAKE} pmar RELEASE=${MIN}
 	cvs export -d ${MODULE_DIR_NAME}-1.${MIN} -r RELEASE_1_${MIN} pike_modules/${MODULE_DIR_NAME}
 	cd ${MODULE_DIR_NAME}-1.${MIN} && \
 	pike -x module --autoheader && pike -x module --autoconf && \
 	rm -rf autom4*
-	cp *.c ${MODULE_DIR_NAME}-1.${MIN}
+#	cp *.c ${MODULE_DIR_NAME}-1.${MIN}
 	gtar czvf ${MODULE_DIR_NAME}-1.${MIN}.tar.gz  ${MODULE_DIR_NAME}-1.${MIN}
 	rm -rf ${MODULE_DIR_NAME}-1.${MIN}
 	pike upload_module_version.pike ${MODULE_NAME} 1.${MIN} "${MODULE_LICENSE}"

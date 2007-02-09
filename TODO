@@ -1,0 +1,3 @@
+- Provide wrappers for more classes
+- Provide more methods
+- Interface for stemmer/stopwords in pike

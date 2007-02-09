@@ -26,6 +26,7 @@ using namespace std;
 
 #define OBJ2_MSET(o) ((struct MSet_struct *)get_storage(o, MSet_program))
 #define OBJ2_STEM(o) ((struct Stem_struct *)get_storage(o, Stem_program))
+#define OBJ2_STOPPER(o) ((struct Stopper_struct *)get_storage(o, Stopper_program))
 #define OBJ2_MSETITERATOR(o) ((struct MSetIterator_struct *)get_storage(o, MSetIterator_program))
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
 #define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
@@ -1060,6 +1061,18 @@ PIKEFUN void set_stemmer(object stemmer)
   parser = THIS->object_data->parser;
   s = OBJ2_STEM(stemmer)->object_data->stem; 
   parser->set_stemmer((const Stem)*s);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void set_stopper(object stopper)
+{
+  QueryParser * parser;
+  Stopper * s;
+
+  parser = THIS->object_data->parser;
+  s = OBJ2_STOPPER(stopper)->object_data->stopper; 
+  parser->set_stopper((const Stopper*)s);
 
   pop_n_elems(args);
 }

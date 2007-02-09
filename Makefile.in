@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.1 2007-02-06 20:41:08 hww3 Exp $
+# $Id: Makefile.in,v 1.2 2007-02-09 06:23:45 hww3 Exp $
 @make_variables@
 VPATH=@srcdir@:@srcdir@/../..:../..
 
@@ -30,7 +30,7 @@ MODULE_NAME=Public.Xapian
 
 # the module name, with periods replaced with underscores. used to 
 # generate the module distribution.
-MODULE_DIR_NAME=Public_Sample
+MODULE_DIR_NAME=Public_Xapian
 
 # need i say more?
 MODULE_LICENSE=GPL/LGPL/MPL

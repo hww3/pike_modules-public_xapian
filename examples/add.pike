@@ -13,8 +13,11 @@ int main(int argc, array argv)
   object s = Stem("english");
   object d = Document();
 
+  d->add_value(0, argv[2]);
+
   foreach(terms; int i; string term)
   {
+    werror("term: " + term + "\n");
     d->add_posting(s->stem_word(lower_case(term)), i, 1);
   }
 

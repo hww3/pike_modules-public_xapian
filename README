@@ -1,0 +1,3 @@
+This is an interface to the Xapian text indexing library. It allows you to
+create and search text indexes using boolean and probabilistic search 
+queries.

@@ -1,0 +1,5 @@
+Version 1.0
+
+- initial release
+- probably won't build without tweaking to the makefile.
+- supports basic indexing and searching

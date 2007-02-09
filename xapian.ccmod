@@ -49,6 +49,11 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    Weight *weight;
+} XAPIAN_WEIGHT_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     QueryParser *parser;
 } XAPIAN_QUERYPARSER_OBJECT_DATA;
 
@@ -81,6 +86,182 @@ extern "C" typedef struct
 {
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
+
+
+/*! @class Weight
+ */
+
+PIKECLASS Weight
+{
+CVAR XAPIAN_WEIGHT_OBJECT_DATA   *object_data;
+
+PIKEFUN int get_sumpart_needs_doclength()
+{
+  Weight *weight;
+  weight = THIS->object_data->weight;
+
+  bool i = weight->get_sumpart_needs_doclength();
+
+  push_int(i?1:0);
+}
+
+PIKEFUN int get_maxpart()
+{
+  Weight *weight;
+  weight = THIS->object_data->weight;
+
+  Xapian::weight i = weight->get_maxpart();
+
+  push_int((INT_TYPE)i);
+}
+
+PIKEFUN int get_maxextra()
+{
+  Weight *weight;
+  weight = THIS->object_data->weight;
+
+  Xapian::weight i = weight->get_maxextra();
+
+  push_int((INT_TYPE)i);
+}
+
+PIKEFUN int get_sumextra(int len)
+{
+  Weight *weight;
+  weight = THIS->object_data->weight;
+
+  Xapian::weight i = weight->get_sumextra((doclength)len);
+
+  push_int((INT_TYPE)i);
+}
+
+PIKEFUN int get_sumpart(int wdf, int len)
+{
+  Weight *weight;
+  weight = THIS->object_data->weight;
+
+  Xapian::weight i = weight->get_sumpart((termcount)wdf, (doclength)len);
+
+  push_int((INT_TYPE)i);
+}
+
+
+PIKEFUN string serialise()
+{
+  Weight *weight;
+  weight = THIS->object_data->weight;
+
+  string str = weight->serialise();
+
+  push_text(str.c_str());
+}
+
+PIKEFUN string name()
+{
+  Weight *weight;
+  weight = THIS->object_data->weight;
+
+  string str = weight->name();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_WEIGHT_OBJECT_DATA * dta = 
+	(XAPIAN_WEIGHT_OBJECT_DATA*)malloc(sizeof(XAPIAN_WEIGHT_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->weight = NULL;
+    THIS->object_data = dta;
+}
+
+PIKEFUN void destroy()
+{
+
+    Weight *weight;
+    weight = THIS->object_data->weight;
+
+    if(weight) 
+    {
+     delete weight;
+    }
+
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+
+    Weight  *weight;
+    weight = THIS->object_data->weight;
+    printf("shutting down!\n");
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
+/*! @class BM25Weight
+ */
+
+PIKECLASS BM25Weight
+{
+  INHERIT Weight;
+
+  PIKEFUN void create(float k1, float k2, float k3, float b, float min_normlen)
+  {
+    BM25Weight * weight;
+    
+    weight = new BM25Weight((double)k1, (double)k2, (double)k3, (double)b, (double)min_normlen);
+
+    THIS->object_data->weight = weight;
+  }
+
+  PIKEFUN object clone()
+  {
+    BM25Weight * weight;
+    BM25Weight * weight2;
+    struct object * obj;
+
+    weight = (BM25Weight *)THIS->object_data->weight;
+    weight2 = weight->clone();
+
+    obj = fast_clone_object(BM25Weight_program);
+    OBJ2_WEIGHT(obj)->object_data->weight = (Weight *)weight2;
+
+    push_object(obj);    
+  }
+}
+
+/*! @endclass
+ */
+
+
+/*! @class BoolWeight
+ */
+
+PIKECLASS BoolWeight
+{
+  INHERIT Weight;
+
+  PIKEFUN void create()
+  {
+    BoolWeight * weight;
+    
+    weight = new BoolWeight();
+
+    THIS->object_data->weight = weight;
+  }
+}
+
+/*! @endclass
+ */
 
 
 /*! @class Stopper
@@ -1586,6 +1767,7 @@ PIKEFUN void commit_transaction()
   }
 
 }
+
 
 PIKEFUN void cancel_transaction()
 {

@@ -1,8 +1,11 @@
-# $Id: configure.in,v 1.1 2007-02-06 20:41:08 hww3 Exp $
+# $Id: configure.in,v 1.2 2007-02-09 20:33:04 hww3 Exp $
 AC_INIT(xapian_config.h.in)
 
 AC_MODULE_INIT()
 AC_CONFIG_HEADERS(xapian_config.h)
+
+AC_PROG_CXX
+AC_LANG(C++)
 
 # PKG_CHECK_MODULES(XML2, libxml-2.0)
 # PKG_CHECK_MODULES(XSLT, libxslt)
@@ -10,8 +13,9 @@ AC_CONFIG_HEADERS(xapian_config.h)
 # CPPFLAGS="${CPPFLAGS} ${XML2_CFLAGS} ${XSLT_CFLAGS}"
 # LDFLAGS="${LDFLAGS} ${XML2_LIBS} ${XSLT_LIBS}"
 
-CMOD_LIBS=""
+CMOD_LIBS="-lxapian"
 CMOD_FLAGS=""
+
 
 AC_CHECK_HEADERS(xapian.h)
 # AC_CHECK_LIB(xml2, xmlCleanupParser) 

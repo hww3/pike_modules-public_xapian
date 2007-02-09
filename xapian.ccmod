@@ -25,9 +25,11 @@ using namespace std;
 #include <ctype.h>
 
 #define OBJ2_MSET(o) ((struct MSet_struct *)get_storage(o, MSet_program))
+#define OBJ2_ESET(o) ((struct ESet_struct *)get_storage(o, ESet_program))
 #define OBJ2_STEM(o) ((struct Stem_struct *)get_storage(o, Stem_program))
 #define OBJ2_STOPPER(o) ((struct Stopper_struct *)get_storage(o, Stopper_program))
 #define OBJ2_MSETITERATOR(o) ((struct MSetIterator_struct *)get_storage(o, MSetIterator_program))
+#define OBJ2_ESETITERATOR(o) ((struct ESetIterator_struct *)get_storage(o, ESetIterator_program))
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
 #define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
 #define OBJ2_QUERY(o) ((struct Query_struct *)get_storage(o, Query_program))
@@ -84,9 +86,18 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    ESet *eset;
+} XAPIAN_ESET_OBJECT_DATA;
+
+extern "C" typedef struct
+{
+    ESetIterator *eseti;
+} XAPIAN_ESETITERATOR_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
-
 
 /*! @class Weight
  */
@@ -105,44 +116,44 @@ PIKEFUN int get_sumpart_needs_doclength()
   push_int(i?1:0);
 }
 
-PIKEFUN int get_maxpart()
+PIKEFUN float get_maxpart()
 {
   Weight *weight;
   weight = THIS->object_data->weight;
 
   Xapian::weight i = weight->get_maxpart();
 
-  push_int((INT_TYPE)i);
+  push_float((FLOAT_TYPE)i);
 }
 
-PIKEFUN int get_maxextra()
+PIKEFUN float get_maxextra()
 {
   Weight *weight;
   weight = THIS->object_data->weight;
 
   Xapian::weight i = weight->get_maxextra();
 
-  push_int((INT_TYPE)i);
+  push_float((FLOAT_TYPE)i);
 }
 
-PIKEFUN int get_sumextra(int len)
+PIKEFUN float get_sumextra(int len)
 {
   Weight *weight;
   weight = THIS->object_data->weight;
 
   Xapian::weight i = weight->get_sumextra((doclength)len);
 
-  push_int((INT_TYPE)i);
+  push_float((FLOAT_TYPE)i);
 }
 
-PIKEFUN int get_sumpart(int wdf, int len)
+PIKEFUN float get_sumpart(int wdf, int len)
 {
   Weight *weight;
   weight = THIS->object_data->weight;
 
   Xapian::weight i = weight->get_sumpart((termcount)wdf, (doclength)len);
 
-  push_int((INT_TYPE)i);
+  push_float((FLOAT_TYPE)i);
 }
 
 
@@ -255,6 +266,27 @@ PIKECLASS BoolWeight
     BoolWeight * weight;
     
     weight = new BoolWeight();
+
+    THIS->object_data->weight = weight;
+  }
+}
+
+/*! @endclass
+ */
+
+
+/*! @class TradWeight
+ */
+
+PIKECLASS TradWeight
+{
+  INHERIT Weight;
+
+  PIKEFUN void create(float k)
+  {
+    TradWeight * weight;
+    
+    weight = new TradWeight((double)k);
 
     THIS->object_data->weight = weight;
   }
@@ -1028,6 +1060,106 @@ EXIT
 /*! @endclass
  */
 
+/*! @class ESetIterator
+ */
+
+PIKECLASS ESetIterator
+{
+  CVAR XAPIAN_ESETITERATOR_OBJECT_DATA   *object_data;
+
+  PIKEFUN string get_term()
+  {
+    ESetIterator  *eseti;
+    string i;
+    eseti = (ESetIterator*)THIS->object_data->eseti;
+    i = (*(*eseti));
+    push_text(i.c_str());
+  }
+
+  PIKEFUN float get_weight()
+  {
+    ESetIterator  *eseti;
+    weight i;
+    eseti = (ESetIterator*)THIS->object_data->eseti;
+    i = eseti->get_weight();
+    push_float((FLOAT_TYPE)i);
+  }  
+  
+  PIKEFUN object next()
+  {
+    ESetIterator  *eseti;
+    eseti = THIS->object_data->eseti;
+    ESetIterator *eseti2;
+
+    struct object * o;
+
+    eseti2 = new ESetIterator((*eseti)++);
+
+    o = fast_clone_object(ESetIterator_program);
+
+    OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+
+    push_object(o);    
+  }
+
+  PIKEFUN object prev()
+  {
+    ESetIterator  *eseti;
+    eseti = THIS->object_data->eseti;
+    ESetIterator *eseti2;
+
+    struct object * o;
+
+    eseti2 = new ESetIterator((*eseti)--);
+
+    o = fast_clone_object(ESetIterator_program);
+
+    OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+
+    push_object(o);    
+  }
+
+  PIKEFUN int `==(mixed arg)
+  {
+    struct object * o;
+    ESetIterator  *eseti;
+    ESetIterator  *esetb;
+
+    if(arg->type!= T_OBJECT) RETURN(0);
+    o = arg->u.object;
+    eseti = (ESetIterator*)THIS->object_data->eseti;
+    esetb = OBJ2_ESETITERATOR(o)->object_data->eseti;
+    if(*eseti == *esetb) RETURN(1);
+    else RETURN(0);
+  }
+
+INIT
+{
+    XAPIAN_ESETITERATOR_OBJECT_DATA * dta = 
+	(XAPIAN_ESETITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_ESETITERATOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->eseti = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    ESetIterator  *eseti;
+    eseti = THIS->object_data->eseti;
+    if(eseti) delete eseti;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass
+ */
+
 
 /*! @class MSet 
  */
@@ -1210,6 +1342,198 @@ PIKEFUN string get_description()
   mset = THIS->object_data->mset;
 
   string str = mset->get_description();
+
+  push_text(str.c_str());
+}
+
+}
+
+/*! @endclass
+ */
+
+
+/*! @class ESet 
+ */
+
+PIKECLASS ESet
+{
+CVAR XAPIAN_ESET_OBJECT_DATA *object_data;
+
+INIT
+{
+    XAPIAN_ESET_OBJECT_DATA * dta = 
+	(XAPIAN_ESET_OBJECT_DATA*)malloc(sizeof(XAPIAN_ESET_OBJECT_DATA));
+printf("allocated eset data.\n");
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->eset = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    ESet  *eset;
+    eset = THIS->object_data->eset;
+    if(eset) delete eset;
+    free(THIS->object_data);
+  }
+}
+
+
+/*! @decl void create()
+ *!   Creates a new Public.Xapian.ESet object
+ *!
+ */
+PIKEFUN void create()
+{
+  try
+  {
+    ESet * eset = new ESet();
+
+    pop_n_elems(args);
+
+    THIS->object_data->eset = eset;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN object begin()
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+
+  ESetIterator eseti;
+  ESetIterator *eseti2;
+  struct object * o;
+
+  eseti = eset->begin();
+
+  eseti2 = new ESetIterator(eseti);
+
+  o = fast_clone_object(ESetIterator_program);
+
+  OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+
+  push_object(o);    
+}
+
+PIKEFUN object end()
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+
+  ESetIterator eseti;
+  ESetIterator *eseti2;
+  struct object * o;
+
+  eseti = eset->end();
+
+  eseti2 = new ESetIterator(eseti);
+
+  o = fast_clone_object(ESetIterator_program);
+
+  OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+
+  push_object(o);    
+}
+
+PIKEFUN object back()
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+
+  ESetIterator eseti;
+  ESetIterator *eseti2;
+  struct object * o;
+
+  eseti = eset->back();
+
+  eseti2 = new ESetIterator(eseti);
+
+  o = fast_clone_object(ESetIterator_program);
+
+  OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+
+  push_object(o);    
+}
+
+PIKEFUN object `[](int i)
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+
+  ESetIterator eseti;
+  ESetIterator *eseti2;
+  struct object * o;
+
+  eseti = (*eset)[(termcount)i];
+
+  eseti2 = new ESetIterator(eseti);
+
+  o = fast_clone_object(ESetIterator_program);
+
+  OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+
+  push_object(o);    
+}
+
+PIKEFUN int size()
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+  termcount i;
+
+  i = eset->size();
+
+  push_int(i);
+}
+
+PIKEFUN int empty()
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+  bool i;
+
+  i = eset->empty();
+
+  push_int(i?1:0);
+}
+
+PIKEFUN int max_size()
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+  termcount i;
+
+  i = eset->max_size();
+
+  push_int(i);
+}
+
+PIKEFUN int get_ebound()
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+  termcount i;
+
+  i = eset->get_ebound();
+
+  push_int(i);
+}
+
+PIKEFUN string get_description()
+{
+  ESet  *eset;
+  eset = THIS->object_data->eset;
+
+  string str = eset->get_description();
 
   push_text(str.c_str());
 }
@@ -1846,6 +2170,15 @@ PIKEFUN void create(object database)
   }
 }
 
+PIKEFUN void set_weighting_scheme(object weight)
+{
+  Enquire * e = THIS->object_data->enquire;
+  Weight * w = (OBJ2_WEIGHT(weight)->object_data->weight);
+
+  e->set_weighting_scheme(*w);
+  pop_n_elems(args);  
+}
+
 PIKEFUN void set_query(object query, int termcount)
 {
   Query * q;
@@ -1857,6 +2190,78 @@ PIKEFUN void set_query(object query, int termcount)
   enquire->set_query(*q, (Xapian::termcount)termcount);
   pop_n_elems(args);  
 }
+
+PIKEFUN void set_cutoff(int percent_cutoff, float weight_cutoff)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  enquire->set_cutoff((percent)percent_cutoff, (weight)weight_cutoff);
+  pop_n_elems(args);  
+}
+
+PIKEFUN void set_docid_order(int docid_order)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  enquire->set_docid_order((Xapian::Enquire::docid_order)docid_order);
+  pop_n_elems(args);  
+}
+
+PIKEFUN void set_collapse_key(int collapse_key)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  enquire->set_collapse_key((valueno)collapse_key);
+  pop_n_elems(args);  
+}
+
+PIKEFUN void set_sort_by_relevance_then_value(int sort_key, int ascending)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  enquire->set_sort_by_relevance_then_value((valueno)sort_key, ascending?true:false);
+  pop_n_elems(args);  
+}
+
+PIKEFUN void set_sort_by_value_then_relevance(int sort_key, int ascending)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  enquire->set_sort_by_value_then_relevance((valueno)sort_key, ascending?true:false);
+  pop_n_elems(args);  
+}
+
+PIKEFUN void set_bias(float bias_weight, int bias_halflife)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  enquire->set_bias((weight)bias_weight, (time_t)bias_halflife);
+  pop_n_elems(args);  
+}
+
+PIKEFUN void set_sort_value(int sort_key, int ascending)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  enquire->set_sort_by_value((valueno)sort_key, ascending?true:false);
+  pop_n_elems(args);  
+}
+
+PIKEFUN void set_sort_by_relevence()
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+  enquire->set_sort_by_relevance();
+}
+
 
 PIKEFUN object get_query()
 {
@@ -1906,6 +2311,34 @@ PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
   push_object(o);
 }
 
+PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, object edecider)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+  ESet eset;
+  ESet * eset1;
+  struct object * o;
+Pike_error("not finished!\n");
+  try
+  {
+//    eset = enquire->get_eset();
+
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }  
+
+  pop_n_elems(args);
+
+  o = fast_clone_object(ESet_program);
+  eset1 = new ESet(eset);
+  OBJ2_ESET(o)->object_data->eset = eset1;
+
+  push_object(o);
+}
+
 PIKEFUN string get_description()
 {
   Enquire  *enquire;
@@ -1936,6 +2369,13 @@ EXIT
     // if(enquire) delete enquire;
     free(THIS->object_data);
   }
+}
+
+EXTRA
+{
+  add_integer_constant("ASCENDING", Enquire::ASCENDING, 0);
+  add_integer_constant("DESCENDING", Enquire::DESCENDING, 0);
+  add_integer_constant("DONT_CARE", Enquire::DONT_CARE, 0);
 }
 
 }

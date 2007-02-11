@@ -81,6 +81,11 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    RSet *rset;
+} XAPIAN_RSET_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     MSetIterator *mseti;
 } XAPIAN_MSETITERATOR_OBJECT_DATA;
 
@@ -1351,6 +1356,167 @@ PIKEFUN string get_description()
 /*! @endclass
  */
 
+/*! @class RSet 
+ */
+
+PIKECLASS RSet
+{
+CVAR XAPIAN_RSET_OBJECT_DATA *object_data;
+
+INIT
+{
+    XAPIAN_RSET_OBJECT_DATA * dta = 
+	(XAPIAN_RSET_OBJECT_DATA*)malloc(sizeof(XAPIAN_RSET_OBJECT_DATA));
+printf("allocated eset data.\n");
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->rset = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    RSet  *rset;
+    rset = THIS->object_data->rset;
+    if(rset) delete rset;
+    free(THIS->object_data);
+  }
+}
+
+
+/*! @decl void create()
+ *!   Creates a new Public.Xapian.RSet object
+ *!
+ */
+PIKEFUN void create()
+{
+  try
+  {
+    RSet * rset = new RSet();
+
+    pop_n_elems(args);
+
+    THIS->object_data->rset = rset;
+  }
+
+  catch(...) 
+  {
+    Pike_error("an error occurred!\n");
+  }
+}
+
+PIKEFUN int size()
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+  doccount i;
+
+  i = rset->size();
+
+  push_int(i);
+}
+
+PIKEFUN int empty()
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+  bool i;
+
+  i = rset->empty();
+
+  push_int(i?1:0);
+}
+
+PIKEFUN void add_document(int docid)
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+
+  rset->add_document((Xapian::docid)docid);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void add_document(object iterator)
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+
+  MSetIterator * i;
+
+  i = OBJ2_MSETITERATOR(iterator)->object_data->mseti;
+
+  rset->add_document(*i);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void remove_document(int docid)
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+
+  rset->remove_document((Xapian::docid)docid);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN void remove_document(object iterator)
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+
+  MSetIterator * i;
+
+  i = OBJ2_MSETITERATOR(iterator)->object_data->mseti;
+
+  rset->remove_document(*i);
+
+  pop_n_elems(args);
+}
+
+PIKEFUN int contains(int docid)
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+  bool r;
+
+  r = rset->contains((Xapian::docid)docid);
+
+  pop_n_elems(args);
+  push_int(r?1:0);
+}
+
+PIKEFUN int contains(object iterator)
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+  bool r;
+  MSetIterator * i;
+
+  i = OBJ2_MSETITERATOR(iterator)->object_data->mseti;
+
+  r = rset->contains(*i);
+
+  pop_n_elems(args);
+
+  push_int(r?1:0);
+}
+
+PIKEFUN string get_description()
+{
+  RSet  *rset;
+  rset = THIS->object_data->rset;
+
+  string str = rset->get_description();
+
+  push_text(str.c_str());
+}
+
+}
 
 /*! @class ESet 
  */
@@ -2282,6 +2448,16 @@ PIKEFUN object get_query()
   push_object(r);
 }
 
+PIKEFUN object get_mset(int first, int maxitems, int checkatleast, object rset, function mdecider)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+  MSet mset;
+  MSet * mset1;
+  struct object * o;
+
+}
+
 PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
 {
   Enquire  *enquire;
@@ -2311,17 +2487,52 @@ PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
   push_object(o);
 }
 
-PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, object edecider)
+
+PIKEFUN object get_eset(int maxitems, object rset, function edecider)
 {
   Enquire  *enquire;
   enquire = THIS->object_data->enquire;
   ESet eset;
   ESet * eset1;
+  RSet * rseto;
   struct object * o;
-Pike_error("not finished!\n");
+
+  rseto = OBJ2_RSET(rset)->object_data->rset;
+ 
   try
   {
-//    eset = enquire->get_eset();
+    eset = enquire->get_eset((termcount)maxitems, *rseto, 0);
+
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }  
+
+  pop_n_elems(args);
+
+  o = fast_clone_object(ESet_program);
+  eset1 = new ESet(eset);
+  OBJ2_ESET(o)->object_data->eset = eset1;
+
+  push_object(o);
+}
+
+PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function edecider)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+  ESet eset;
+  ESet * eset1;
+  RSet * rseto;
+  struct object * o;
+
+  rseto = OBJ2_RSET(rset)->object_data->rset;
+ 
+  try
+  {
+    eset = enquire->get_eset((termcount)maxitems, *rseto, (int)flags, (double)k, 0);
 
   }
   catch(InvalidArgumentError &e)

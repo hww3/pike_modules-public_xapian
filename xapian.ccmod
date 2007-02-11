@@ -91,6 +91,11 @@ extern "C" typedef struct
 
 extern "C" typedef struct
 {
+    ValueIterator *valuei;
+} XAPIAN_VALUEITERATOR_OBJECT_DATA;
+
+extern "C" typedef struct
+{
     ESet *eset;
 } XAPIAN_ESET_OBJECT_DATA;
 
@@ -98,6 +103,11 @@ extern "C" typedef struct
 {
     ESetIterator *eseti;
 } XAPIAN_ESETITERATOR_OBJECT_DATA;
+
+extern "C" typedef struct
+{
+    TermIterator *termi;
+} XAPIAN_TERMITERATOR_OBJECT_DATA;
 
 extern "C" typedef struct
 {
@@ -929,6 +939,211 @@ EXIT
 
 /*! @endclass
  */
+
+/*! @class ValueIterator
+ */
+
+PIKECLASS ValueIterator
+{
+  CVAR XAPIAN_VALUEITERATOR_OBJECT_DATA   *object_data;
+
+  PIKEFUN object next()
+  {
+    ValueIterator  *valuei;
+    valuei = THIS->object_data->valuei;
+    ValueIterator *valuei2;
+
+    struct object * o;
+
+    valuei2 = new ValueIterator((*valuei)++);
+
+    o = fast_clone_object(ValueIterator_program);
+
+    OBJ2_VALUEITERATOR(o)->object_data->valuei = valuei;
+
+    push_object(o);    
+  }
+
+  PIKEFUN int `==(mixed arg)
+  {
+    struct object * o;
+    ValueIterator  *valuei;
+    ValueIterator  *valueb;
+
+    if(arg->type!= T_OBJECT) RETURN(0);
+    o = arg->u.object;
+    valuei = (ValueIterator*)THIS->object_data->valuei;
+    valueb = OBJ2_VALUEITERATOR(o)->object_data->valuei;
+    if(*valuei == *valueb) RETURN(1);
+    else RETURN(0);
+  }
+
+  PIKEFUN int get_valueno()
+  {
+    ValueIterator  *valuei;
+    valueno i;
+    valuei = (ValueIterator*)THIS->object_data->valuei;
+    i = valuei->get_valueno();
+    push_int((INT_TYPE)i);
+  }
+
+  PIKEFUN string get_value()
+  {
+    ValueIterator  *valuei;
+    string i;
+    valuei = (ValueIterator*)THIS->object_data->valuei;
+    i = (*(*valuei));
+    push_text(i.c_str());
+  }
+
+
+PIKEFUN string get_description()
+{
+  ValueIterator  *valuei;
+  valuei = THIS->object_data->valuei;
+
+  string str = valuei->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_VALUEITERATOR_OBJECT_DATA * dta = 
+	(XAPIAN_VALUEITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_VALUEITERATOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->valuei = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    ValueIterator  *valuei;
+    valuei = THIS->object_data->valuei;
+    if(valuei) delete valuei;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass ValueIterator
+
+/*! @class TermIterator
+ */
+
+PIKECLASS TermIterator
+{
+  CVAR XAPIAN_TERMITERATOR_OBJECT_DATA   *object_data;
+
+  PIKEFUN object next()
+  {
+    TermIterator  * termi;
+    termi = THIS->object_data->termi;
+    TermIterator *termi2;
+
+    struct object * o;
+
+    termi2 = new TermIterator(++(*termi));
+
+    o = fast_clone_object(TermIterator_program);
+
+    OBJ2_TERMITERATOR(o)->object_data->termi = termi;
+
+    push_object(o);    
+  }
+
+  PIKEFUN int `==(mixed arg)
+  {
+    struct object * o;
+    TermIterator  *termi;
+    TermIterator  *termb;
+
+    if(arg->type!= T_OBJECT) RETURN(0);
+    o = arg->u.object;
+    termi = (TermIterator*)THIS->object_data->termi;
+    termb = OBJ2_TERMITERATOR(o)->object_data->termi;
+    if(*termi == *termb) RETURN(1);
+    else RETURN(0);
+  }
+
+  PIKEFUN int get_wdf()
+  {
+    TermIterator  *termi;
+    termcount i;
+    termi = (TermIterator*)THIS->object_data->termi;
+    i = termi->get_wdf();
+    push_int((INT_TYPE)i);
+  }
+
+  PIKEFUN int get_termfreq()
+  {
+    TermIterator  *termi;
+    doccount i;
+    termi = (TermIterator*)THIS->object_data->termi;
+    i = termi->get_termfreq();
+    push_int((INT_TYPE)i);
+  }
+
+  PIKEFUN int positionlist_count()
+  {
+    TermIterator  *termi;
+    termcount i;
+    termi = (TermIterator*)THIS->object_data->termi;
+    i = termi->positionlist_count();
+    push_int((INT_TYPE)i);
+  }
+
+
+  PIKEFUN string get_term()
+  {
+    TermIterator  *termi;
+    string i;
+    termi = (TermIterator*)THIS->object_data->termi;
+    i = (*(*termi));
+    push_text(i.c_str());
+  }
+
+
+PIKEFUN string get_description()
+{
+  TermIterator  *termi;
+  termi = THIS->object_data->termi;
+
+  string str = termi->get_description();
+
+  push_text(str.c_str());
+}
+
+INIT
+{
+    XAPIAN_TERMITERATOR_OBJECT_DATA * dta = 
+	(XAPIAN_TERMITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_TERMITERATOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->termi = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    TermIterator  *termi;
+    termi = THIS->object_data->termi;
+    if(termi) delete termi;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*! @endclass TermIterator
 
 /*! @class MSetIterator
  */

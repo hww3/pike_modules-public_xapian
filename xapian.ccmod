@@ -2663,13 +2663,36 @@ PIKEFUN object get_query()
   push_object(r);
 }
 
-PIKEFUN object get_mset(int first, int maxitems, int checkatleast, object rset, function mdecider)
+PIKEFUN object get_mset(int first, int maxitems, object rset, function mdecider)
 {
   Enquire  *enquire;
   enquire = THIS->object_data->enquire;
   MSet mset;
   MSet * mset1;
   struct object * o;
+  RSet * rseto;
+
+  rseto = OBJ2_RSET(rset)->object_data->rset;
+
+  try
+  {
+    mset = enquire->get_mset((doccount)first, (doccount)maxitems, 
+            rseto, 0);
+
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }  
+
+  pop_n_elems(args);
+
+  o = fast_clone_object(MSet_program);
+  mset1 = new MSet(mset);
+  OBJ2_MSET(o)->object_data->mset = mset1;
+
+  push_object(o);
 
 }
 

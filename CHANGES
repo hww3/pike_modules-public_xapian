@@ -1,3 +1,9 @@
+Version 1.1
+
+- added Relevance sets and Expand sets
+- better building support
+- requires dynamic_module_makefile from 7.7 cvs
+
 Version 1.0
 
 - initial release

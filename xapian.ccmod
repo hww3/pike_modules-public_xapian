@@ -114,9 +114,6 @@ extern "C" typedef struct
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
 
-/*! @class Weight
- */
-
 PIKECLASS Weight
 {
 CVAR XAPIAN_WEIGHT_OBJECT_DATA   *object_data;
@@ -230,12 +227,6 @@ EXIT
 
 }
 
-/*! @endclass
- */
-
-/*! @class BM25Weight
- */
-
 PIKECLASS BM25Weight
 {
   INHERIT Weight;
@@ -265,13 +256,6 @@ PIKECLASS BM25Weight
   }
 }
 
-/*! @endclass
- */
-
-
-/*! @class BoolWeight
- */
-
 PIKECLASS BoolWeight
 {
   INHERIT Weight;
@@ -286,13 +270,6 @@ PIKECLASS BoolWeight
   }
 }
 
-/*! @endclass
- */
-
-
-/*! @class TradWeight
- */
-
 PIKECLASS TradWeight
 {
   INHERIT Weight;
@@ -306,13 +283,6 @@ PIKECLASS TradWeight
     THIS->object_data->weight = weight;
   }
 }
-
-/*! @endclass
- */
-
-
-/*! @class Stopper
- */
 
 PIKECLASS Stopper
 {
@@ -378,12 +348,6 @@ EXIT
 
 }
 
-/*! @endclass
- */
-
-/*! @class SimpleStopper
- */
-
 PIKECLASS SimpleStopper
 {
   INHERIT Stopper;
@@ -427,22 +391,11 @@ PIKECLASS SimpleStopper
   
 }
 
-/*! @endclass
- */
-
-/*! @class Stem
- */
-
 PIKECLASS Stem
 {
 CVAR XAPIAN_STEM_OBJECT_DATA   *object_data;
 
 
-/*! @decl void create(string language)
- *! @decl void create()
- *!   Creates a new Public.Xapian.Stem object
- *!
- */
 PIKEFUN void create(string language)
 {
   Stem* stem;
@@ -533,22 +486,12 @@ EXIT
 
 }
 
-/*! @endclass
- */
-
-/*! @class Query 
- */
-
 PIKECLASS Query
 {
 
 CVAR XAPIAN_QUERY_OBJECT_DATA   *object_data;
 
 
-/*! @decl void create()
- *!   Creates a new Public.Xapian.Query object
- *!
- */
 PIKEFUN void create()
 {
   try
@@ -714,22 +657,12 @@ add_integer_constant("OP_ELITE_SET", Query::OP_ELITE_SET, 0);
 
 }
 
-/*! @endclass
- */
-
-/*! @class Document 
- */
-
 PIKECLASS Document
 {
 
 CVAR XAPIAN_DOCUMENT_OBJECT_DATA   *object_data;
 
 
-/*! @decl void create()
- *!   Creates a new Public.Xapian.Document object
- *!
- */
 PIKEFUN void create()
 {
   try
@@ -937,12 +870,6 @@ EXIT
 
 }
 
-/*! @endclass
- */
-
-/*! @class ValueIterator
- */
-
 PIKECLASS ValueIterator
 {
   CVAR XAPIAN_VALUEITERATOR_OBJECT_DATA   *object_data;
@@ -1030,11 +957,6 @@ EXIT
 }
 
 }
-
-/*! @endclass ValueIterator
-
-/*! @class TermIterator
- */
 
 PIKECLASS TermIterator
 {
@@ -1142,11 +1064,6 @@ EXIT
 }
 
 }
-
-/*! @endclass TermIterator
-
-/*! @class MSetIterator
- */
 
 PIKECLASS MSetIterator
 {
@@ -1277,12 +1194,6 @@ EXIT
 
 }
 
-/*! @endclass
- */
-
-/*! @class ESetIterator
- */
-
 PIKECLASS ESetIterator
 {
   CVAR XAPIAN_ESETITERATOR_OBJECT_DATA   *object_data;
@@ -1377,13 +1288,6 @@ EXIT
 
 }
 
-/*! @endclass
- */
-
-
-/*! @class MSet 
- */
-
 PIKECLASS MSet
 {
 CVAR XAPIAN_MSET_OBJECT_DATA *object_data;
@@ -1412,10 +1316,6 @@ EXIT
 }
 
 
-/*! @decl void create()
- *!   Creates a new Public.Xapian.MSet object
- *!
- */
 PIKEFUN void create()
 {
   try
@@ -1568,12 +1468,6 @@ PIKEFUN string get_description()
 
 }
 
-/*! @endclass
- */
-
-/*! @class RSet 
- */
-
 PIKECLASS RSet
 {
 CVAR XAPIAN_RSET_OBJECT_DATA *object_data;
@@ -1601,11 +1495,6 @@ EXIT
   }
 }
 
-
-/*! @decl void create()
- *!   Creates a new Public.Xapian.RSet object
- *!
- */
 PIKEFUN void create()
 {
   try
@@ -1733,9 +1622,6 @@ PIKEFUN string get_description()
 
 }
 
-/*! @class ESet 
- */
-
 PIKECLASS ESet
 {
 CVAR XAPIAN_ESET_OBJECT_DATA *object_data;
@@ -1764,10 +1650,6 @@ EXIT
 }
 
 
-/*! @decl void create()
- *!   Creates a new Public.Xapian.ESet object
- *!
- */
 PIKEFUN void create()
 {
   try
@@ -1921,13 +1803,6 @@ PIKEFUN string get_description()
 
 }
 
-/*! @endclass
- */
-
-
-/*! @class QueryParser
- */
-
 PIKECLASS QueryParser
 {
 CVAR XAPIAN_QUERYPARSER_OBJECT_DATA   *object_data;
@@ -2052,13 +1927,6 @@ EXIT
 }
 
 }
-
-/*! @endclass
- */
-
-
-/*! @class Database
- */
 
 PIKECLASS Database
 {
@@ -2220,17 +2088,10 @@ EXIT
 
 }
 
-/*! @class WriteableDatabase
- */
-
 PIKECLASS WriteableDatabase
 {
 INHERIT Database;
 
-/*! @decl void create(string appname)
- *!   Creates a new Public.Xapian.WriteableDatabase object
- *!
- */
 PIKEFUN void create(string path, int mode)
 {
   try
@@ -2514,23 +2375,12 @@ PIKEFUN string get_description()
 
 }
 
-/*! @endclass
- */
-
-
-/*! @class Enquire
- */
-
 PIKECLASS Enquire
 {
 
 CVAR XAPIAN_ENQUIRE_OBJECT_DATA   *object_data;
 
 
-/*! @decl void create()
- *!   Creates a new Public.Xapian.Query object
- *!
- */
 PIKEFUN void create(object database)
 {
   try
@@ -2829,10 +2679,6 @@ EXTRA
 
 }
 
-/*! @endclass
- */
-
-
 
 INIT
 {
@@ -2847,10 +2693,6 @@ add_integer_constant("DB_CREATE", DB_CREATE, 0);
 add_integer_constant("DB_CREATE_OR_OVERWRITE", DB_CREATE_OR_OVERWRITE, 0);
 add_integer_constant("DB_OPEN", DB_OPEN, 0);
 }
-
-/*! @endclass
- */
-
 
 /*! @endmodule
  */

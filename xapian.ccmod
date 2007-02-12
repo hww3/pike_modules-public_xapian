@@ -114,10 +114,21 @@ extern "C" typedef struct
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
 
+/*! @class Weight
+*/
+
 PIKECLASS Weight
 {
 CVAR XAPIAN_WEIGHT_OBJECT_DATA   *object_data;
 
+/*  Weight.int get_sumpart_needs_doclength() */
+/*! @decl int get_sumpart_needs_doclength()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_sumpart_needs_doclength()
 {
   Weight *weight;
@@ -128,6 +139,14 @@ PIKEFUN int get_sumpart_needs_doclength()
   push_int(i?1:0);
 }
 
+/*  Weight.float get_maxpart() */
+/*! @decl float get_maxpart()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN float get_maxpart()
 {
   Weight *weight;
@@ -138,6 +157,14 @@ PIKEFUN float get_maxpart()
   push_float((FLOAT_TYPE)i);
 }
 
+/*  Weight.float get_maxextra() */
+/*! @decl float get_maxextra()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN float get_maxextra()
 {
   Weight *weight;
@@ -148,6 +175,17 @@ PIKEFUN float get_maxextra()
   push_float((FLOAT_TYPE)i);
 }
 
+/*  Weight.float get_sumextra(int len) */
+/*! @decl float get_sumextra(int len)
+ *!
+ *!  
+ *! @param len
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN float get_sumextra(int len)
 {
   Weight *weight;
@@ -158,6 +196,20 @@ PIKEFUN float get_sumextra(int len)
   push_float((FLOAT_TYPE)i);
 }
 
+/*  Weight.float get_sumpart(int wdf, int len) */
+/*! @decl float get_sumpart(int wdf, int len)
+ *!
+ *!  
+ *! @param wdf
+ *!  
+* !
+ *! @param len
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN float get_sumpart(int wdf, int len)
 {
   Weight *weight;
@@ -169,6 +221,14 @@ PIKEFUN float get_sumpart(int wdf, int len)
 }
 
 
+/*  Weight.string serialise() */
+/*! @decl string serialise()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string serialise()
 {
   Weight *weight;
@@ -179,6 +239,14 @@ PIKEFUN string serialise()
   push_text(str.c_str());
 }
 
+/*  Weight.string name() */
+/*! @decl string name()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string name()
 {
   Weight *weight;
@@ -200,6 +268,12 @@ INIT
     THIS->object_data = dta;
 }
 
+/*  Weight.void destroy() */
+/*! @decl void destroy()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void destroy()
 {
 
@@ -226,6 +300,12 @@ EXIT
 }
 
 }
+
+/*!  @endclass
+*/
+
+/*! @class BM25Weight
+*/
 
 PIKECLASS BM25Weight
 {
@@ -256,6 +336,12 @@ PIKECLASS BM25Weight
   }
 }
 
+/*!  @endclass
+*/
+
+/*! @class BoolWeight
+*/
+
 PIKECLASS BoolWeight
 {
   INHERIT Weight;
@@ -269,6 +355,12 @@ PIKECLASS BoolWeight
     THIS->object_data->weight = weight;
   }
 }
+
+/*!  @endclass
+*/
+
+/*! @class TradWeight
+*/
 
 PIKECLASS TradWeight
 {
@@ -284,10 +376,24 @@ PIKECLASS TradWeight
   }
 }
 
+/*!  @endclass
+*/
+
+/*! @class Stopper
+*/
+
 PIKECLASS Stopper
 {
 CVAR XAPIAN_STOPPER_OBJECT_DATA   *object_data;
 
+/*  Stopper.int `()(string word) */
+/*! @decl int `()(string word)
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int `()(string word)
 {
   Stopper  *stopper;
@@ -300,6 +406,14 @@ PIKEFUN int `()(string word)
   push_int(i?1:0);
 }
 
+/*  Stopper.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   Stopper  *stopper;
@@ -321,6 +435,12 @@ INIT
     THIS->object_data = dta;
 }
 
+/*  Stopper.void destroy() */
+/*! @decl void destroy()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void destroy()
 {
 
@@ -347,6 +467,12 @@ EXIT
 }
 
 }
+
+/*!  @endclass
+*/
+
+/*! @class SimpleStopper
+*/
 
 PIKECLASS SimpleStopper
 {
@@ -391,11 +517,26 @@ PIKECLASS SimpleStopper
   
 }
 
+/*!  @endclass
+*/
+
+/*! @class Stem
+*/
+
 PIKECLASS Stem
 {
 CVAR XAPIAN_STEM_OBJECT_DATA   *object_data;
 
 
+/*  Stem.void create(string language) */
+/*! @decl void create(string language)
+ *!
+ *!  
+ *! @param language
+ *!  
+* !
+ *!
+ */
 PIKEFUN void create(string language)
 {
   Stem* stem;
@@ -417,6 +558,12 @@ PIKEFUN void create(string language)
   THIS->object_data->stem = stem;
 }
 
+/*  Stem.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void create()
 {
     Stem* stem = new Stem();
@@ -426,6 +573,17 @@ PIKEFUN void create()
     THIS->object_data->stem = stem;
 }
 
+/*  Stem.string stem_word(string word) */
+/*! @decl string stem_word(string word)
+ *!
+ *!  
+ *! @param word
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string stem_word(string word)
 {
   Stem  *stem;
@@ -438,6 +596,14 @@ PIKEFUN string stem_word(string word)
   push_text(foo.c_str());
 }
 
+/*  Stem.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   Stem  *stem;
@@ -459,6 +625,12 @@ INIT
     THIS->object_data = dta;
 }
 
+/*  Stem.void destroy() */
+/*! @decl void destroy()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void destroy()
 {
 
@@ -486,12 +658,24 @@ EXIT
 
 }
 
+/*!  @endclass
+*/
+
+/*! @class Query
+*/
+
 PIKECLASS Query
 {
 
 CVAR XAPIAN_QUERY_OBJECT_DATA   *object_data;
 
 
+/*  Query.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void create()
 {
   try
@@ -509,6 +693,21 @@ PIKEFUN void create()
   }
 }
 
+/*  Query.void create(string term, int wqf, int pos) */
+/*! @decl void create(string term, int wqf, int pos)
+ *!
+ *!  
+ *! @param term
+ *!  
+* !
+ *! @param wqf
+ *!  
+* !
+ *! @param pos
+ *!  
+* !
+ *!
+ */
 PIKEFUN void create(string term, int wqf, int pos)
 {
   try
@@ -527,6 +726,21 @@ PIKEFUN void create(string term, int wqf, int pos)
   }
 }
 
+/*  Query.void create(int op, string left, string right) */
+/*! @decl void create(int op, string left, string right)
+ *!
+ *!  
+ *! @param op
+ *!  
+* !
+ *! @param left
+ *!  
+* !
+ *! @param right
+ *!  
+* !
+ *!
+ */
 PIKEFUN void create(int op, string left, string right)
 {
   try
@@ -547,6 +761,21 @@ PIKEFUN void create(int op, string left, string right)
 }
 
 
+/*  Query.void create(int op, object left, object right) */
+/*! @decl void create(int op, object left, object right)
+ *!
+ *!  
+ *! @param op
+ *!  
+* !
+ *! @param left
+ *!  
+* !
+ *! @param right
+ *!  
+* !
+ *!
+ */
 PIKEFUN void create(int op, object left, object right)
 {
   Query * l;
@@ -570,6 +799,18 @@ PIKEFUN void create(int op, object left, object right)
   }
 }
 
+/*  Query.void create(int op, object query) */
+/*! @decl void create(int op, object query)
+ *!
+ *!  
+ *! @param op
+ *!  
+* !
+ *! @param query
+ *!  
+* !
+ *!
+ */
 PIKEFUN void create(int op, object query)
 {
   Query * q;
@@ -591,6 +832,14 @@ PIKEFUN void create(int op, object query)
   }
 }
 
+/*  Query.int get_length() */
+/*! @decl int get_length()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_length()
 {
   Query  *query;
@@ -600,6 +849,14 @@ PIKEFUN int get_length()
   push_int(i);
 }
 
+/*  Query.int empty() */
+/*! @decl int empty()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int empty()
 {
   Query  *query;
@@ -610,6 +867,14 @@ PIKEFUN int empty()
 }
 
 
+/*  Query.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   Query  *query;
@@ -657,12 +922,24 @@ add_integer_constant("OP_ELITE_SET", Query::OP_ELITE_SET, 0);
 
 }
 
+/*!  @endclass
+*/
+
+/*! @class Document
+*/
+
 PIKECLASS Document
 {
 
 CVAR XAPIAN_DOCUMENT_OBJECT_DATA   *object_data;
 
 
+/*  Document.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void create()
 {
   try
@@ -680,6 +957,15 @@ PIKEFUN void create()
   }
 }
 
+/*  Document.void set_data(string data) */
+/*! @decl void set_data(string data)
+ *!
+ *!  
+ *! @param data
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_data(string data)
 {
   Document  *doc;
@@ -691,6 +977,12 @@ PIKEFUN void set_data(string data)
   pop_n_elems(args);
 }
 
+/*  Document.void clear_terms() */
+/*! @decl void clear_terms()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void clear_terms()
 {
   Document  *doc;
@@ -699,6 +991,12 @@ PIKEFUN void clear_terms()
   doc->clear_terms();
 }
 
+/*  Document.void clear_values() */
+/*! @decl void clear_values()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void clear_values()
 {
   Document  *doc;
@@ -707,6 +1005,14 @@ PIKEFUN void clear_values()
   doc->clear_values();
 }
 
+/*  Document.string get_data() */
+/*! @decl string get_data()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_data()
 {
   Document  *doc;
@@ -717,6 +1023,14 @@ PIKEFUN string get_data()
   push_text(str.c_str());
 }
 
+/*  Document.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   Document  *doc;
@@ -727,6 +1041,17 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+/*  Document.string get_value(int val) */
+/*! @decl string get_value(int val)
+ *!
+ *!  
+ *! @param val
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_value(int val)
 {
   Document  *doc;
@@ -742,6 +1067,15 @@ PIKEFUN string get_value(int val)
     push_int(0);
 }
 
+/*  Document.void remove_value(int val) */
+/*! @decl void remove_value(int val)
+ *!
+ *!  
+ *! @param val
+ *!  
+* !
+ *!
+ */
 PIKEFUN void remove_value(int val)
 {
   Document  *doc;
@@ -752,6 +1086,18 @@ PIKEFUN void remove_value(int val)
   pop_n_elems(args);
 }
 
+/*  Document.void add_term(string tname, int termcount) */
+/*! @decl void add_term(string tname, int termcount)
+ *!
+ *!  
+ *! @param tname
+ *!  
+* !
+ *! @param termcount
+ *!  
+* !
+ *!
+ */
 PIKEFUN void add_term(string tname, int termcount)
 {
   Document  *doc;
@@ -764,6 +1110,21 @@ PIKEFUN void add_term(string tname, int termcount)
   pop_n_elems(args);
 }
 
+/*  Document.void add_posting(string tname, int termpos, int termcount) */
+/*! @decl void add_posting(string tname, int termpos, int termcount)
+ *!
+ *!  
+ *! @param tname
+ *!  
+* !
+ *! @param termpos
+ *!  
+* !
+ *! @param termcount
+ *!  
+* !
+ *!
+ */
 PIKEFUN void add_posting(string tname, int termpos, int termcount)
 {
   Document  *doc;
@@ -786,6 +1147,15 @@ PIKEFUN void add_posting(string tname, int termpos, int termcount)
   pop_n_elems(args);
 }
 
+/*  Document.void remove_term(string tname) */
+/*! @decl void remove_term(string tname)
+ *!
+ *!  
+ *! @param tname
+ *!  
+* !
+ *!
+ */
 PIKEFUN void remove_term(string tname)
 {
   Document  *doc;
@@ -806,6 +1176,18 @@ PIKEFUN void remove_term(string tname)
   pop_n_elems(args);
 }
 
+/*  Document.void add_value(int valueno, string value) */
+/*! @decl void add_value(int valueno, string value)
+ *!
+ *!  
+ *! @param valueno
+ *!  
+* !
+ *! @param value
+ *!  
+* !
+ *!
+ */
 PIKEFUN void add_value(int valueno, string value)
 {
   Document  *doc;
@@ -817,6 +1199,14 @@ PIKEFUN void add_value(int valueno, string value)
   pop_n_elems(args);
 }
 
+/*  Document.int termlist_count() */
+/*! @decl int termlist_count()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int termlist_count()
 {
   Document  *doc;
@@ -830,6 +1220,14 @@ PIKEFUN int termlist_count()
   return;
 }
 
+/*  Document.int values_count() */
+/*! @decl int values_count()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int values_count()
 {
   Document  *doc;
@@ -869,6 +1267,12 @@ EXIT
 }
 
 }
+
+/*!  @endclass
+*/
+
+/*! @class ValueIterator
+*/
 
 PIKECLASS ValueIterator
 {
@@ -924,6 +1328,14 @@ PIKECLASS ValueIterator
   }
 
 
+/*  ValueIterator.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   ValueIterator  *valuei;
@@ -957,6 +1369,12 @@ EXIT
 }
 
 }
+
+/*!  @endclass
+*/
+
+/*! @class TermIterator
+*/
 
 PIKECLASS TermIterator
 {
@@ -1031,6 +1449,14 @@ PIKECLASS TermIterator
   }
 
 
+/*  TermIterator.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   TermIterator  *termi;
@@ -1064,6 +1490,12 @@ EXIT
 }
 
 }
+
+/*!  @endclass
+*/
+
+/*! @class MSetIterator
+*/
 
 PIKECLASS MSetIterator
 {
@@ -1194,6 +1626,12 @@ EXIT
 
 }
 
+/*!  @endclass
+*/
+
+/*! @class ESetIterator
+*/
+
 PIKECLASS ESetIterator
 {
   CVAR XAPIAN_ESETITERATOR_OBJECT_DATA   *object_data;
@@ -1288,6 +1726,12 @@ EXIT
 
 }
 
+/*!  @endclass
+*/
+
+/*! @class MSet
+*/
+
 PIKECLASS MSet
 {
 CVAR XAPIAN_MSET_OBJECT_DATA *object_data;
@@ -1316,6 +1760,12 @@ EXIT
 }
 
 
+/*  MSet.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void create()
 {
   try
@@ -1333,6 +1783,14 @@ PIKEFUN void create()
   }
 }
 
+/*  MSet.object begin() */
+/*! @decl object begin()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object begin()
 {
   MSet  *mset;
@@ -1353,6 +1811,14 @@ PIKEFUN object begin()
   push_object(o);    
 }
 
+/*  MSet.object end() */
+/*! @decl object end()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object end()
 {
   MSet  *mset;
@@ -1373,6 +1839,14 @@ PIKEFUN object end()
   push_object(o);    
 }
 
+/*  MSet.object back() */
+/*! @decl object back()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object back()
 {
   MSet  *mset;
@@ -1393,6 +1867,12 @@ PIKEFUN object back()
   push_object(o);    
 }
 
+/*  MSet.void fetch() */
+/*! @decl void fetch()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void fetch()
 {
   MSet  *mset;
@@ -1401,6 +1881,14 @@ PIKEFUN void fetch()
   mset->fetch();
 }
 
+/*  MSet.int size() */
+/*! @decl int size()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int size()
 {
   MSet  *mset;
@@ -1412,6 +1900,14 @@ PIKEFUN int size()
   push_int(i);
 }
 
+/*  MSet.int get_matches_estimated() */
+/*! @decl int get_matches_estimated()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_matches_estimated()
 {
   MSet  *mset;
@@ -1423,6 +1919,14 @@ PIKEFUN int get_matches_estimated()
   push_int(i);
 }
 
+/*  MSet.int get_matches_upper_bound() */
+/*! @decl int get_matches_upper_bound()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_matches_upper_bound()
 {
   MSet  *mset;
@@ -1434,6 +1938,14 @@ PIKEFUN int get_matches_upper_bound()
   push_int(i);
 }
 
+/*  MSet.int get_firstitem() */
+/*! @decl int get_firstitem()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_firstitem()
 {
   MSet  *mset;
@@ -1445,6 +1957,14 @@ PIKEFUN int get_firstitem()
   push_int(i);
 }
 
+/*  MSet.int get_matches_lower_bound() */
+/*! @decl int get_matches_lower_bound()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_matches_lower_bound()
 {
   MSet  *mset;
@@ -1456,6 +1976,14 @@ PIKEFUN int get_matches_lower_bound()
   push_int(i);
 }
 
+/*  MSet.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   MSet  *mset;
@@ -1467,6 +1995,12 @@ PIKEFUN string get_description()
 }
 
 }
+
+/*!  @endclass
+*/
+
+/*! @class RSet
+*/
 
 PIKECLASS RSet
 {
@@ -1495,6 +2029,12 @@ EXIT
   }
 }
 
+/*  RSet.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void create()
 {
   try
@@ -1512,6 +2052,14 @@ PIKEFUN void create()
   }
 }
 
+/*  RSet.int size() */
+/*! @decl int size()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int size()
 {
   RSet  *rset;
@@ -1523,6 +2071,14 @@ PIKEFUN int size()
   push_int(i);
 }
 
+/*  RSet.int empty() */
+/*! @decl int empty()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int empty()
 {
   RSet  *rset;
@@ -1534,6 +2090,15 @@ PIKEFUN int empty()
   push_int(i?1:0);
 }
 
+/*  RSet.void add_document(int docid) */
+/*! @decl void add_document(int docid)
+ *!
+ *!  
+ *! @param docid
+ *!  
+* !
+ *!
+ */
 PIKEFUN void add_document(int docid)
 {
   RSet  *rset;
@@ -1544,6 +2109,15 @@ PIKEFUN void add_document(int docid)
   pop_n_elems(args);
 }
 
+/*  RSet.void add_document(object iterator) */
+/*! @decl void add_document(object iterator)
+ *!
+ *!  
+ *! @param iterator
+ *!  
+* !
+ *!
+ */
 PIKEFUN void add_document(object iterator)
 {
   RSet  *rset;
@@ -1558,6 +2132,15 @@ PIKEFUN void add_document(object iterator)
   pop_n_elems(args);
 }
 
+/*  RSet.void remove_document(int docid) */
+/*! @decl void remove_document(int docid)
+ *!
+ *!  
+ *! @param docid
+ *!  
+* !
+ *!
+ */
 PIKEFUN void remove_document(int docid)
 {
   RSet  *rset;
@@ -1568,6 +2151,15 @@ PIKEFUN void remove_document(int docid)
   pop_n_elems(args);
 }
 
+/*  RSet.void remove_document(object iterator) */
+/*! @decl void remove_document(object iterator)
+ *!
+ *!  
+ *! @param iterator
+ *!  
+* !
+ *!
+ */
 PIKEFUN void remove_document(object iterator)
 {
   RSet  *rset;
@@ -1582,6 +2174,17 @@ PIKEFUN void remove_document(object iterator)
   pop_n_elems(args);
 }
 
+/*  RSet.int contains(int docid) */
+/*! @decl int contains(int docid)
+ *!
+ *!  
+ *! @param docid
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int contains(int docid)
 {
   RSet  *rset;
@@ -1594,6 +2197,17 @@ PIKEFUN int contains(int docid)
   push_int(r?1:0);
 }
 
+/*  RSet.int contains(object iterator) */
+/*! @decl int contains(object iterator)
+ *!
+ *!  
+ *! @param iterator
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int contains(object iterator)
 {
   RSet  *rset;
@@ -1610,6 +2224,14 @@ PIKEFUN int contains(object iterator)
   push_int(r?1:0);
 }
 
+/*  RSet.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   RSet  *rset;
@@ -1621,6 +2243,12 @@ PIKEFUN string get_description()
 }
 
 }
+
+/*!  @endclass
+*/
+
+/*! @class ESet
+*/
 
 PIKECLASS ESet
 {
@@ -1650,6 +2278,12 @@ EXIT
 }
 
 
+/*  ESet.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void create()
 {
   try
@@ -1667,6 +2301,14 @@ PIKEFUN void create()
   }
 }
 
+/*  ESet.object begin() */
+/*! @decl object begin()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object begin()
 {
   ESet  *eset;
@@ -1687,6 +2329,14 @@ PIKEFUN object begin()
   push_object(o);    
 }
 
+/*  ESet.object end() */
+/*! @decl object end()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object end()
 {
   ESet  *eset;
@@ -1707,6 +2357,14 @@ PIKEFUN object end()
   push_object(o);    
 }
 
+/*  ESet.object back() */
+/*! @decl object back()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object back()
 {
   ESet  *eset;
@@ -1727,6 +2385,17 @@ PIKEFUN object back()
   push_object(o);    
 }
 
+/*  ESet.object `[](int i) */
+/*! @decl object `[](int i)
+ *!
+ *!  
+ *! @param i
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object `[](int i)
 {
   ESet  *eset;
@@ -1747,6 +2416,14 @@ PIKEFUN object `[](int i)
   push_object(o);    
 }
 
+/*  ESet.int size() */
+/*! @decl int size()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int size()
 {
   ESet  *eset;
@@ -1758,6 +2435,14 @@ PIKEFUN int size()
   push_int(i);
 }
 
+/*  ESet.int empty() */
+/*! @decl int empty()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int empty()
 {
   ESet  *eset;
@@ -1769,6 +2454,14 @@ PIKEFUN int empty()
   push_int(i?1:0);
 }
 
+/*  ESet.int max_size() */
+/*! @decl int max_size()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int max_size()
 {
   ESet  *eset;
@@ -1780,6 +2473,14 @@ PIKEFUN int max_size()
   push_int(i);
 }
 
+/*  ESet.int get_ebound() */
+/*! @decl int get_ebound()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_ebound()
 {
   ESet  *eset;
@@ -1791,6 +2492,14 @@ PIKEFUN int get_ebound()
   push_int(i);
 }
 
+/*  ESet.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   ESet  *eset;
@@ -1803,10 +2512,22 @@ PIKEFUN string get_description()
 
 }
 
+/*!  @endclass
+*/
+
+/*! @class QueryParser
+*/
+
 PIKECLASS QueryParser
 {
 CVAR XAPIAN_QUERYPARSER_OBJECT_DATA   *object_data;
 
+/*  QueryParser.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void create()
 {
   QueryParser * parser = new QueryParser();
@@ -1814,6 +2535,15 @@ PIKEFUN void create()
   THIS->object_data->parser = parser;
 }
 
+/*  QueryParser.void set_stemmer(object stemmer) */
+/*! @decl void set_stemmer(object stemmer)
+ *!
+ *!  
+ *! @param stemmer
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_stemmer(object stemmer)
 {
   QueryParser * parser;
@@ -1826,6 +2556,15 @@ PIKEFUN void set_stemmer(object stemmer)
   pop_n_elems(args);
 }
 
+/*  QueryParser.void set_stopper(object stopper) */
+/*! @decl void set_stopper(object stopper)
+ *!
+ *!  
+ *! @param stopper
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_stopper(object stopper)
 {
   QueryParser * parser;
@@ -1838,6 +2577,15 @@ PIKEFUN void set_stopper(object stopper)
   pop_n_elems(args);
 }
 
+/*  QueryParser.void set_default_op(int op) */
+/*! @decl void set_default_op(int op)
+ *!
+ *!  
+ *! @param op
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_default_op(int op)
 {
   QueryParser * parser;
@@ -1848,6 +2596,20 @@ PIKEFUN void set_default_op(int op)
   pop_n_elems(args);
 }
 
+/*  QueryParser.object parse_query(string query, int flags) */
+/*! @decl object parse_query(string query, int flags)
+ *!
+ *!  
+ *! @param query
+ *!  
+* !
+ *! @param flags
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object parse_query(string query, int flags)
 {
   Query q;
@@ -1870,6 +2632,18 @@ PIKEFUN object parse_query(string query, int flags)
   push_object(o);
 }
 
+/*  QueryParser.void add_prefix(string field, string prefix) */
+/*! @decl void add_prefix(string field, string prefix)
+ *!
+ *!  
+ *! @param field
+ *!  
+* !
+ *! @param prefix
+ *!  
+* !
+ *!
+ */
 PIKEFUN void add_prefix(string field, string prefix)
 {
   QueryParser *parser;
@@ -1882,6 +2656,18 @@ PIKEFUN void add_prefix(string field, string prefix)
   pop_n_elems(args);
 }
 
+/*  QueryParser.void add_boolean_prefix(string field, string prefix) */
+/*! @decl void add_boolean_prefix(string field, string prefix)
+ *!
+ *!  
+ *! @param field
+ *!  
+* !
+ *! @param prefix
+ *!  
+* !
+ *!
+ */
 PIKEFUN void add_boolean_prefix(string field, string prefix)
 {
   QueryParser *parser;
@@ -1894,6 +2680,14 @@ PIKEFUN void add_boolean_prefix(string field, string prefix)
   pop_n_elems(args);
 }
 
+/*  QueryParser.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   QueryParser *parser;
@@ -1928,10 +2722,25 @@ EXIT
 
 }
 
+/*!  @endclass
+*/
+
+/*! @class Database
+*/
+
 PIKECLASS Database
 {
 CVAR XAPIAN_DATABASE_OBJECT_DATA   *object_data;
 
+/*  Database.void create(string path) */
+/*! @decl void create(string path)
+ *!
+ *!  
+ *! @param path
+ *!  
+* !
+ *!
+ */
 PIKEFUN void create(string path)
 {
   string str((const char *)path->str, (size_t)path->len);
@@ -1941,6 +2750,12 @@ PIKEFUN void create(string path)
   pop_n_elems(args);  
 }
 
+/*  Database.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void create()
 {
   Database * db = new Database();
@@ -1948,6 +2763,12 @@ PIKEFUN void create()
   THIS->object_data->database = db;
 }
 
+/*  Database.void reopen() */
+/*! @decl void reopen()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void reopen()
 {
   Database * db = THIS->object_data->database;
@@ -1955,6 +2776,12 @@ PIKEFUN void reopen()
   db->reopen();
 }
 
+/*  Database.void keep_alive() */
+/*! @decl void keep_alive()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void keep_alive()
 {
   Database * db = THIS->object_data->database;
@@ -1963,6 +2790,17 @@ PIKEFUN void keep_alive()
 }
 
 
+/*  Database.int get_doclength(int did) */
+/*! @decl int get_doclength(int did)
+ *!
+ *!  
+ *! @param did
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_doclength(int did)
 {
   Database  *db;
@@ -1973,6 +2811,14 @@ PIKEFUN int get_doclength(int did)
   push_int((INT_TYPE)i);
 }
 
+/*  Database.int get_doccount() */
+/*! @decl int get_doccount()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_doccount()
 {
   Database  *db;
@@ -1982,6 +2828,14 @@ PIKEFUN int get_doccount()
   push_int(i);
 }
 
+/*  Database.int get_avlength() */
+/*! @decl int get_avlength()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_avlength()
 {
   Database  *db;
@@ -1991,6 +2845,14 @@ PIKEFUN int get_avlength()
   push_int((INT_TYPE)i);
 }
 
+/*  Database.int get_lastdocid() */
+/*! @decl int get_lastdocid()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int get_lastdocid()
 {
   Database  *db;
@@ -2001,6 +2863,14 @@ PIKEFUN int get_lastdocid()
 }
 
 
+/*  Database.int has_positions() */
+/*! @decl int has_positions()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int has_positions()
 {
   Database  *db;
@@ -2011,6 +2881,17 @@ PIKEFUN int has_positions()
   push_int(i?1:0);
 }
 
+/*  Database.object get_document(int id) */
+/*! @decl object get_document(int id)
+ *!
+ *!  
+ *! @param id
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object get_document(int id)
 {
   Database  *db;
@@ -2043,6 +2924,14 @@ PIKEFUN object get_document(int id)
 
 }
 
+/*  Database.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   Database  *db;
@@ -2064,6 +2953,12 @@ INIT
     THIS->object_data = dta;
 }
 
+/*  Database.void destroy() */
+/*! @decl void destroy()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void destroy()
 {
     Database  *db;
@@ -2088,10 +2983,28 @@ EXIT
 
 }
 
+/*!  @endclass
+*/
+
+/*! @class WriteableDatabase
+*/
+
 PIKECLASS WriteableDatabase
 {
 INHERIT Database;
 
+/*  WriteableDatabase.void create(string path, int mode) */
+/*! @decl void create(string path, int mode)
+ *!
+ *!  
+ *! @param path
+ *!  
+* !
+ *! @param mode
+ *!  
+* !
+ *!
+ */
 PIKEFUN void create(string path, int mode)
 {
   try
@@ -2119,6 +3032,12 @@ PIKEFUN void create(string path, int mode)
   }
 }
 
+/*  WriteableDatabase.void flush() */
+/*! @decl void flush()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void flush()
 {
   WritableDatabase  *db;
@@ -2142,6 +3061,17 @@ PIKEFUN void flush()
   }
 }
 
+/*  WriteableDatabase.int add_document(object document) */
+/*! @decl int add_document(object document)
+ *!
+ *!  
+ *! @param document
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN int add_document(object document)
 {
   WritableDatabase  *db;
@@ -2175,6 +3105,18 @@ PIKEFUN int add_document(object document)
 }
 
 
+/*  WriteableDatabase.void replace_document(int did, object document) */
+/*! @decl void replace_document(int did, object document)
+ *!
+ *!  
+ *! @param did
+ *!  
+* !
+ *! @param document
+ *!  
+* !
+ *!
+ */
 PIKEFUN void replace_document(int did, object document)
 {
   WritableDatabase  *db;
@@ -2206,6 +3148,18 @@ PIKEFUN void replace_document(int did, object document)
   pop_n_elems(args);
 }
 
+/*  WriteableDatabase.void replace_document(string term, object document) */
+/*! @decl void replace_document(string term, object document)
+ *!
+ *!  
+ *! @param term
+ *!  
+* !
+ *! @param document
+ *!  
+* !
+ *!
+ */
 PIKEFUN void replace_document(string term, object document)
 {
   WritableDatabase  *db;
@@ -2239,6 +3193,15 @@ PIKEFUN void replace_document(string term, object document)
   pop_n_elems(args);
 }
 
+/*  WriteableDatabase.void delete_document(string unique_term) */
+/*! @decl void delete_document(string unique_term)
+ *!
+ *!  
+ *! @param unique_term
+ *!  
+* !
+ *!
+ */
 PIKEFUN void delete_document(string unique_term)
 {
   WritableDatabase  *db;
@@ -2261,6 +3224,15 @@ PIKEFUN void delete_document(string unique_term)
 
 }
 
+/*  WriteableDatabase.void delete_document(int did) */
+/*! @decl void delete_document(int did)
+ *!
+ *!  
+ *! @param did
+ *!  
+* !
+ *!
+ */
 PIKEFUN void delete_document(int did)
 {
   WritableDatabase  *db;
@@ -2284,6 +3256,15 @@ PIKEFUN void delete_document(int did)
 }
 
 
+/*  WriteableDatabase.void begin_transaction(int flushed) */
+/*! @decl void begin_transaction(int flushed)
+ *!
+ *!  
+ *! @param flushed
+ *!  
+* !
+ *!
+ */
 PIKEFUN void begin_transaction(int flushed)
 {
   WritableDatabase  *db;
@@ -2306,6 +3287,12 @@ PIKEFUN void begin_transaction(int flushed)
 
 }
 
+/*  WriteableDatabase.void commit_transaction() */
+/*! @decl void commit_transaction()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void commit_transaction()
 {
   WritableDatabase  *db;
@@ -2335,6 +3322,12 @@ PIKEFUN void commit_transaction()
 }
 
 
+/*  WriteableDatabase.void cancel_transaction() */
+/*! @decl void cancel_transaction()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void cancel_transaction()
 {
   WritableDatabase  *db;
@@ -2363,6 +3356,14 @@ PIKEFUN void cancel_transaction()
 
 }
 
+/*  WriteableDatabase.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   WritableDatabase  *db;
@@ -2375,12 +3376,27 @@ PIKEFUN string get_description()
 
 }
 
+/*!  @endclass
+*/
+
+/*! @class Enquire
+*/
+
 PIKECLASS Enquire
 {
 
 CVAR XAPIAN_ENQUIRE_OBJECT_DATA   *object_data;
 
 
+/*  Enquire.void create(object database) */
+/*! @decl void create(object database)
+ *!
+ *!  
+ *! @param database
+ *!  
+* !
+ *!
+ */
 PIKEFUN void create(object database)
 {
   try
@@ -2401,6 +3417,15 @@ PIKEFUN void create(object database)
   }
 }
 
+/*  Enquire.void set_weighting_scheme(object weight) */
+/*! @decl void set_weighting_scheme(object weight)
+ *!
+ *!  
+ *! @param weight
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_weighting_scheme(object weight)
 {
   Enquire * e = THIS->object_data->enquire;
@@ -2410,6 +3435,18 @@ PIKEFUN void set_weighting_scheme(object weight)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_query(object query, int termcount) */
+/*! @decl void set_query(object query, int termcount)
+ *!
+ *!  
+ *! @param query
+ *!  
+* !
+ *! @param termcount
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_query(object query, int termcount)
 {
   Query * q;
@@ -2422,6 +3459,18 @@ PIKEFUN void set_query(object query, int termcount)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_cutoff(int percent_cutoff, float weight_cutoff) */
+/*! @decl void set_cutoff(int percent_cutoff, float weight_cutoff)
+ *!
+ *!  
+ *! @param percent_cutoff
+ *!  
+* !
+ *! @param weight_cutoff
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_cutoff(int percent_cutoff, float weight_cutoff)
 {
   Enquire  *enquire;
@@ -2431,6 +3480,15 @@ PIKEFUN void set_cutoff(int percent_cutoff, float weight_cutoff)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_docid_order(int docid_order) */
+/*! @decl void set_docid_order(int docid_order)
+ *!
+ *!  
+ *! @param docid_order
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_docid_order(int docid_order)
 {
   Enquire  *enquire;
@@ -2440,6 +3498,15 @@ PIKEFUN void set_docid_order(int docid_order)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_collapse_key(int collapse_key) */
+/*! @decl void set_collapse_key(int collapse_key)
+ *!
+ *!  
+ *! @param collapse_key
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_collapse_key(int collapse_key)
 {
   Enquire  *enquire;
@@ -2449,6 +3516,18 @@ PIKEFUN void set_collapse_key(int collapse_key)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_sort_by_relevance_then_value(int sort_key, int ascending) */
+/*! @decl void set_sort_by_relevance_then_value(int sort_key, int ascending)
+ *!
+ *!  
+ *! @param sort_key
+ *!  
+* !
+ *! @param ascending
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_sort_by_relevance_then_value(int sort_key, int ascending)
 {
   Enquire  *enquire;
@@ -2458,6 +3537,18 @@ PIKEFUN void set_sort_by_relevance_then_value(int sort_key, int ascending)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_sort_by_value_then_relevance(int sort_key, int ascending) */
+/*! @decl void set_sort_by_value_then_relevance(int sort_key, int ascending)
+ *!
+ *!  
+ *! @param sort_key
+ *!  
+* !
+ *! @param ascending
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_sort_by_value_then_relevance(int sort_key, int ascending)
 {
   Enquire  *enquire;
@@ -2467,6 +3558,18 @@ PIKEFUN void set_sort_by_value_then_relevance(int sort_key, int ascending)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_bias(float bias_weight, int bias_halflife) */
+/*! @decl void set_bias(float bias_weight, int bias_halflife)
+ *!
+ *!  
+ *! @param bias_weight
+ *!  
+* !
+ *! @param bias_halflife
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_bias(float bias_weight, int bias_halflife)
 {
   Enquire  *enquire;
@@ -2476,6 +3579,18 @@ PIKEFUN void set_bias(float bias_weight, int bias_halflife)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_sort_value(int sort_key, int ascending) */
+/*! @decl void set_sort_value(int sort_key, int ascending)
+ *!
+ *!  
+ *! @param sort_key
+ *!  
+* !
+ *! @param ascending
+ *!  
+* !
+ *!
+ */
 PIKEFUN void set_sort_value(int sort_key, int ascending)
 {
   Enquire  *enquire;
@@ -2485,6 +3600,12 @@ PIKEFUN void set_sort_value(int sort_key, int ascending)
   pop_n_elems(args);  
 }
 
+/*  Enquire.void set_sort_by_relevence() */
+/*! @decl void set_sort_by_relevence()
+ *!
+ *!  
+ *!
+ */
 PIKEFUN void set_sort_by_relevence()
 {
   Enquire  *enquire;
@@ -2494,6 +3615,14 @@ PIKEFUN void set_sort_by_relevence()
 }
 
 
+/*  Enquire.object get_query() */
+/*! @decl object get_query()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object get_query()
 {
   Enquire  *enquire;
@@ -2513,6 +3642,26 @@ PIKEFUN object get_query()
   push_object(r);
 }
 
+/*  Enquire.object get_mset(int first, int maxitems, object rset, function mdecider) */
+/*! @decl object get_mset(int first, int maxitems, object rset, function mdecider)
+ *!
+ *!  
+ *! @param first
+ *!  
+* !
+ *! @param maxitems
+ *!  
+* !
+ *! @param rset
+ *!  
+* !
+ *! @param mdecider
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object get_mset(int first, int maxitems, object rset, function mdecider)
 {
   Enquire  *enquire;
@@ -2546,6 +3695,23 @@ PIKEFUN object get_mset(int first, int maxitems, object rset, function mdecider)
 
 }
 
+/*  Enquire.object get_mset(int first, int maxitems, int checkatleast) */
+/*! @decl object get_mset(int first, int maxitems, int checkatleast)
+ *!
+ *!  
+ *! @param first
+ *!  
+* !
+ *! @param maxitems
+ *!  
+* !
+ *! @param checkatleast
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
 {
   Enquire  *enquire;
@@ -2576,6 +3742,23 @@ PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
 }
 
 
+/*  Enquire.object get_eset(int maxitems, object rset, function edecider) */
+/*! @decl object get_eset(int maxitems, object rset, function edecider)
+ *!
+ *!  
+ *! @param maxitems
+ *!  
+* !
+ *! @param rset
+ *!  
+* !
+ *! @param edecider
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object get_eset(int maxitems, object rset, function edecider)
 {
   Enquire  *enquire;
@@ -2607,6 +3790,29 @@ PIKEFUN object get_eset(int maxitems, object rset, function edecider)
   push_object(o);
 }
 
+/*  Enquire.object get_eset(int maxitems, object rset, int flags, float k, function edecider) */
+/*! @decl object get_eset(int maxitems, object rset, int flags, float k, function edecider)
+ *!
+ *!  
+ *! @param maxitems
+ *!  
+* !
+ *! @param rset
+ *!  
+* !
+ *! @param flags
+ *!  
+* !
+ *! @param k
+ *!  
+* !
+ *! @param edecider
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function edecider)
 {
   Enquire  *enquire;
@@ -2638,6 +3844,14 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function 
   push_object(o);
 }
 
+/*  Enquire.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
 PIKEFUN string get_description()
 {
   Enquire  *enquire;
@@ -2701,3 +3915,5 @@ add_integer_constant("DB_OPEN", DB_OPEN, 0);
  */
 
 
+/*!  @endclass
+ */

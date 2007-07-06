@@ -305,6 +305,7 @@ EXIT
 */
 
 /*! @class BM25Weight
+ *! @inherit Weight
 */
 
 PIKECLASS BM25Weight
@@ -340,6 +341,7 @@ PIKECLASS BM25Weight
 */
 
 /*! @class BoolWeight
+ *! @inherit Weight
 */
 
 PIKECLASS BoolWeight
@@ -360,6 +362,7 @@ PIKECLASS BoolWeight
 */
 
 /*! @class TradWeight
+ *! @inherit Weight
 */
 
 PIKECLASS TradWeight
@@ -472,6 +475,7 @@ EXIT
 */
 
 /*! @class SimpleStopper
+ *! @inherit Stopper
 */
 
 PIKECLASS SimpleStopper
@@ -2720,6 +2724,37 @@ EXIT
   }
 }
 
+EXTRA
+{
+  QueryParser::feature_flag flag;
+
+  flag = QueryParser::FLAG_BOOLEAN;
+  add_integer_constant("FLAG_BOOLEAN", flag, 0);
+  flag = QueryParser::FLAG_PHRASE;
+  add_integer_constant("FLAG_PHRASE", flag, 0);
+  flag = QueryParser::FLAG_LOVEHATE;
+  add_integer_constant("FLAG_LOVEHATE", flag, 0);
+  flag = QueryParser::FLAG_BOOLEAN_ANY_CASE;
+  add_integer_constant("FLAG_BOOLEAN_ANY_CASE", flag, 0);
+  flag = QueryParser::FLAG_WILDCARD;
+  add_integer_constant("FLAG_WILDCARD", flag, 0);
+
+/*
+  flag = QueryParser::FLAG_PURE_NOT;
+  add_integer_constant("FLAG_PURE_NOT", flag, 0);
+  flag = QueryParser::FLAG_PARTIAL;
+  add_integer_constant("FLAG_PARTIAL", flag, 0);
+  flag = QueryParser::FLAG_SPELLING_CORRECTION;
+  add_integer_constant("FLAG_SPELLING_CORRECTION", flag, 0);
+  flag = QueryParser::FLAG_SYNONYM;
+  add_integer_constant("FLAG_SYNONYM", flag, 0);
+  flag = QueryParser::FLAG_AUTO_SYNONYMS;
+  add_integer_constant("FLAG_AUTO_SYNONYMS", flag, 0);
+  flag = QueryParser::FLAG_MULTIWORD_SYNONYMS;
+  add_integer_constant("FLAG_MULTIWORD_SYNONYMS", flag, 0);
+*/
+}
+
 }
 
 /*!  @endclass
@@ -2987,6 +3022,7 @@ EXIT
 */
 
 /*! @class WriteableDatabase
+ *! @inherit Database
 */
 
 PIKECLASS WriteableDatabase
@@ -3908,12 +3944,13 @@ add_integer_constant("DB_CREATE_OR_OVERWRITE", DB_CREATE_OR_OVERWRITE, 0);
 add_integer_constant("DB_OPEN", DB_OPEN, 0);
 }
 
-/*! @endmodule
- */
-
-/*! @endmodule
- */
-
-
 /*!  @endclass
  */
+
+/*! @endmodule
+ */
+
+/*! @endmodule
+ */
+
+

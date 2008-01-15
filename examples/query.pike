@@ -19,10 +19,10 @@ int main(int argc, array argv)
 
   object i;
   i = mset->begin();
-  while(i!= mset->end())
+  while( i != mset->end())
   {
-    werror(i->get_percent() + "%: " + i->get_document()->get_data()  + "\n");
-    i = i->next();
+    werror(i->get_percent() + "%: " + i->get_document()->get_value(1)  + "\n");
+    i->next();
   }
 
   return 0;

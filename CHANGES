@@ -1,3 +1,9 @@
+Version 1.2
+
+- Compiles properly against Xapian 1.0.x
+- Added _sprintf() methods to all classes
+- Added pike iterator interface for ESets and MSets
+- Removed most of the C++ style iterator interface for ESets and MSets
 - Added some flags from QueryParser
 
 Version 1.1

@@ -427,6 +427,25 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  Stopper  *stopper;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    stopper = THIS->object_data->stopper;
+
+    string str = stopper->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
 INIT
 {
     XAPIAN_STOPPER_OBJECT_DATA * dta = 
@@ -588,14 +607,14 @@ PIKEFUN void create()
  *!  
  *!
  */
-PIKEFUN string stem_word(string word)
+PIKEFUN string `()(string word)
 {
   Stem  *stem;
   string foo;
   const string str((const char *)word->str, (size_t)word->len);
   stem = THIS->object_data->stem;
 
-  foo = stem->stem_word(str);
+  foo = (*stem)(str);
   pop_n_elems(args);
   push_text(foo.c_str());
 }
@@ -617,6 +636,25 @@ PIKEFUN string get_description()
 
   push_text(str.c_str());
 }
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  Stem  *stem;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    stem = THIS->object_data->stem;
+
+    string str = stem->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
 
 INIT
 {
@@ -889,6 +927,24 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  Query  *query;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    query = THIS->object_data->query;
+
+    string str = query->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
 INIT
 {
     XAPIAN_QUERY_OBJECT_DATA * dta = 
@@ -1044,6 +1100,25 @@ PIKEFUN string get_description()
 
   push_text(str.c_str());
 }
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  Document  *doc;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    doc = THIS->object_data->document;
+
+    string str = doc->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
 
 /*  Document.string get_value(int val) */
 /*! @decl string get_value(int val)
@@ -1354,6 +1429,25 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  ValueIterator  *it;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    it = THIS->object_data->valuei;
+
+    string str = it->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
 INIT
 {
     XAPIAN_VALUEITERATOR_OBJECT_DATA * dta = 
@@ -1479,6 +1573,25 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  TermIterator  *it;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    it = THIS->object_data->termi;
+
+    string str = it->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
 INIT
 {
     XAPIAN_TERMITERATOR_OBJECT_DATA * dta = 
@@ -1511,6 +1624,8 @@ EXIT
 
 PIKECLASS MSetIterator
 {
+  CVAR int current_index;
+  CVAR MSetIterator * msete;
   CVAR XAPIAN_MSETITERATOR_OBJECT_DATA   *object_data;
 
   PIKEFUN object get_document()
@@ -1535,6 +1650,16 @@ PIKECLASS MSetIterator
     Pike_error("RangeError\n");
   }
 
+  }
+
+  PIKEFUN mixed index()
+  {
+    push_int(THIS->current_index);
+  }
+
+  PIKEFUN object value()
+  {
+    push_object(this_object());
   }
 
   PIKEFUN int get_docid()
@@ -1580,18 +1705,13 @@ PIKECLASS MSetIterator
     MSetIterator *mseti2;
 
     struct object * o;
-
-//    mseti2 = new MSetIterator(
 (*mseti)++;
-//);
-/*
-    o = fast_clone_object(MSetIterator_program);
 
-    OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
-*/
-    push_object(this_object());    
+   THIS->current_index++;
+    if(*mseti == *(THIS->msete)) {push_int(0); return;}
+    push_int(1);    
   }
-
+/*
   PIKEFUN object prev()
   {
     MSetIterator  *mseti;
@@ -1607,6 +1727,31 @@ PIKECLASS MSetIterator
     OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
 
     push_object(o);    
+  }
+*/
+  PIKEFUN mixed `+=(int i)
+  {
+    MSetIterator  *mseti;
+    mseti = THIS->object_data->mseti;
+    
+    for(int x = 0; x < i; x++)
+    {
+      (*mseti)++;
+      if(*mseti == *(THIS->msete)) {
+        pop_stack(); push_int(0); return;}
+    }
+    THIS->current_index++;
+    pop_stack();
+    push_object(this_object());
+  }
+ 
+  PIKEFUN int `!()
+  {
+    MSetIterator  *mseti;
+    mseti = THIS->object_data->mseti;
+    if(*mseti == *(THIS->msete)) { push_int(1); }
+    else
+      push_int(0);
   }
 
   PIKEFUN int `==(mixed arg)
@@ -1658,6 +1803,8 @@ EXIT
 
 PIKECLASS ESetIterator
 {
+  CVAR int current_index;
+  CVAR ESetIterator * esete;
   CVAR XAPIAN_ESETITERATOR_OBJECT_DATA   *object_data;
 
   PIKEFUN string get_term()
@@ -1677,24 +1824,31 @@ PIKECLASS ESetIterator
     i = eseti->get_weight();
     push_float((FLOAT_TYPE)i);
   }  
-  
+
+  PIKEFUN mixed index()
+  {
+    push_int(THIS->current_index);
+  }
+
+  PIKEFUN object value()
+  {
+    push_object(this_object());
+  }
+
   PIKEFUN object next()
   {
     ESetIterator  *eseti;
     eseti = THIS->object_data->eseti;
     ESetIterator *eseti2;
 
-    struct object * o;
+(*eseti)++;
 
-    eseti2 = new ESetIterator((*eseti)++);
-
-    o = fast_clone_object(ESetIterator_program);
-
-    OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
-
-    push_object(o);    
+   THIS->current_index++;
+    if(*eseti == *(THIS->esete)) {push_int(0); return;}
+    push_int(1);    
   }
 
+/*
   PIKEFUN object prev()
   {
     ESetIterator  *eseti;
@@ -1710,6 +1864,32 @@ PIKECLASS ESetIterator
     OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
 
     push_object(o);    
+  }
+*/
+
+  PIKEFUN mixed `+=(int i)
+  {
+    ESetIterator  *eseti;
+    eseti = THIS->object_data->eseti;
+    
+    for(int x = 0; x < i; x++)
+    {
+      (*eseti)++;
+      if(*eseti == *(THIS->esete)) {
+        pop_stack(); push_int(0); return;}
+    }
+    THIS->current_index++;
+    pop_stack();
+    push_object(this_object());
+  }
+
+  PIKEFUN int `!()
+  {
+    ESetIterator  *eseti;
+    eseti = THIS->object_data->eseti;
+    if(*eseti == *(THIS->esete)) { push_int(1); }
+    else
+      push_int(0);
   }
 
   PIKEFUN int `==(mixed arg)
@@ -1836,6 +2016,27 @@ PIKEFUN object begin()
   o = fast_clone_object(MSetIterator_program);
 
   OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+
+  push_object(o);    
+}
+
+PIKEFUN object _get_iterator()
+{
+  MSet  *mset;
+  mset = THIS->object_data->mset;
+
+  MSetIterator mseti;
+  MSetIterator *mseti2;
+  struct object * o;
+
+  mseti = mset->begin();
+
+  mseti2 = new MSetIterator(mseti);
+
+  o = fast_clone_object(MSetIterator_program);
+
+  OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+  OBJ2_MSETITERATOR(o)->msete = new MSetIterator(mset->end());
 
   push_object(o);    
 }
@@ -2021,6 +2222,26 @@ PIKEFUN string get_description()
 
   push_text(str.c_str());
 }
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  MSet  *mset;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    mset = THIS->object_data->mset;
+
+    string str = mset->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
 
 }
 
@@ -2269,6 +2490,25 @@ PIKEFUN string get_description()
 
   push_text(str.c_str());
 }
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  RSet  *rset;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    rset = THIS->object_data->rset;
+
+    string str = rset->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
 
 }
 
@@ -2538,6 +2778,25 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  ESet  *eset;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    eset = THIS->object_data->eset;
+
+    string str = eset->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
 }
 
 /*!  @endclass
@@ -2726,6 +2985,24 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  QueryParser  *query;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    query = THIS->object_data->parser;
+
+    string str = query->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
 INIT
 {
     XAPIAN_QUERYPARSER_OBJECT_DATA * dta = 
@@ -2762,14 +3039,14 @@ EXTRA
   add_integer_constant("FLAG_BOOLEAN_ANY_CASE", flag, 0);
   flag = QueryParser::FLAG_WILDCARD;
   add_integer_constant("FLAG_WILDCARD", flag, 0);
+  flag = QueryParser::FLAG_SPELLING_CORRECTION;
+  add_integer_constant("FLAG_SPELLING_CORRECTION", flag, 0);
 
 /*
   flag = QueryParser::FLAG_PURE_NOT;
   add_integer_constant("FLAG_PURE_NOT", flag, 0);
   flag = QueryParser::FLAG_PARTIAL;
   add_integer_constant("FLAG_PARTIAL", flag, 0);
-  flag = QueryParser::FLAG_SPELLING_CORRECTION;
-  add_integer_constant("FLAG_SPELLING_CORRECTION", flag, 0);
   flag = QueryParser::FLAG_SYNONYM;
   add_integer_constant("FLAG_SYNONYM", flag, 0);
   flag = QueryParser::FLAG_AUTO_SYNONYMS;
@@ -3000,6 +3277,25 @@ PIKEFUN string get_description()
 
   push_text(str.c_str());
 }
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  Database  *db;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    db = THIS->object_data->database;
+
+    string str = db->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
 
 INIT
 {
@@ -3438,6 +3734,25 @@ PIKEFUN string get_description()
   push_text(str.c_str());
 }
 
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  WritableDatabase  *db;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    db = (WritableDatabase*)THIS->object_data->database;
+
+    string str = db->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
 }
 
 /*!  @endclass
@@ -3619,27 +3934,6 @@ PIKEFUN void set_sort_by_value_then_relevance(int sort_key, int ascending)
   enquire = THIS->object_data->enquire;
 
   enquire->set_sort_by_value_then_relevance((valueno)sort_key, ascending?true:false);
-  pop_n_elems(args);  
-}
-
-/*  Enquire.void set_bias(float bias_weight, int bias_halflife) */
-/*! @decl void set_bias(float bias_weight, int bias_halflife)
- *!
- *!  
- *! @param bias_weight
- *!  
-* !
- *! @param bias_halflife
- *!  
-* !
- *!
- */
-PIKEFUN void set_bias(float bias_weight, int bias_halflife)
-{
-  Enquire  *enquire;
-  enquire = THIS->object_data->enquire;
-
-  enquire->set_bias((weight)bias_weight, (time_t)bias_halflife);
   pop_n_elems(args);  
 }
 
@@ -3925,6 +4219,25 @@ PIKEFUN string get_description()
 
   push_text(str.c_str());
 }
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  Enquire  *enquire;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    enquire = THIS->object_data->enquire;
+
+    string str = enquire->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
 
 INIT
 {

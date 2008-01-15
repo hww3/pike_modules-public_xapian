@@ -1,3 +1,6 @@
+We need to consider the implications of wide-strings passed to things like 
+stoppers and such. Do we need to convert them to UTF8?
+
 Pike Glue Classes we need to write:
 
 Xapian::DateValueRangeProcessor	Handle a date range

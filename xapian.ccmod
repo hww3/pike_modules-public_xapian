@@ -1304,12 +1304,16 @@ PIKECLASS ValueIterator
     struct object * o;
     ValueIterator  *valuei;
     ValueIterator  *valueb;
+    struct ValueIterator_struct * vis;    
 
     if(arg->type!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     valuei = (ValueIterator*)THIS->object_data->valuei;
-    valueb = OBJ2_VALUEITERATOR(o)->object_data->valuei;
-    if(*valuei == *valueb) RETURN(1);
+    vis = OBJ2_VALUEITERATOR(o);
+    if(!vis) RETURN(0);
+
+    valueb = vis->object_data->valuei;
+    if(valuei == valueb) RETURN(1);
     else RETURN(0);
   }
 
@@ -1406,12 +1410,16 @@ PIKECLASS TermIterator
     struct object * o;
     TermIterator  *termi;
     TermIterator  *termb;
+    struct TermIterator_struct * tis;    
 
     if(arg->type!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     termi = (TermIterator*)THIS->object_data->termi;
-    termb = OBJ2_TERMITERATOR(o)->object_data->termi;
-    if(*termi == *termb) RETURN(1);
+    tis = OBJ2_TERMITERATOR(o);
+    if(!tis) RETURN(0);
+
+    termb = tis->object_data->termi;
+    if(termi == termb) RETURN(1);
     else RETURN(0);
   }
 
@@ -1595,14 +1603,18 @@ PIKECLASS MSetIterator
   PIKEFUN int `==(mixed arg)
   {
     struct object * o;
+    struct MSetIterator_struct * msis;    
     MSetIterator  *mseti;
     MSetIterator  *msetb;
 
     if(arg->type!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     mseti = (MSetIterator*)THIS->object_data->mseti;
-    msetb = OBJ2_MSETITERATOR(o)->object_data->mseti;
-    if(*mseti == *msetb) RETURN(1);
+    msis = OBJ2_MSETITERATOR(o);
+    if(!msis) RETURN(0);
+
+    msetb = msis->object_data->mseti;
+    if(mseti == msetb) RETURN(1);
     else RETURN(0);
   }
 
@@ -1697,12 +1709,17 @@ PIKECLASS ESetIterator
     struct object * o;
     ESetIterator  *eseti;
     ESetIterator  *esetb;
+    struct ESetIterator_struct * esis;    
 
     if(arg->type!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     eseti = (ESetIterator*)THIS->object_data->eseti;
-    esetb = OBJ2_ESETITERATOR(o)->object_data->eseti;
-    if(*eseti == *esetb) RETURN(1);
+
+    esis = OBJ2_ESETITERATOR(o);
+    if(!esis) RETURN(0);
+
+    esetb = esis->object_data->eseti;
+    if(eseti == esetb) RETURN(1);
     else RETURN(0);
   }
 
@@ -3135,7 +3152,11 @@ PIKEFUN int add_document(object document)
   {
     Pike_error("DatabaseError\n");
   }
-
+  catch(Xapian::InvalidArgumentError &e)
+  {
+    printf("%s\n",e.get_msg().c_str());
+    Pike_error("InvalidArgumentError\n");
+  }
   pop_n_elems(args);
   push_int(id);  
 }

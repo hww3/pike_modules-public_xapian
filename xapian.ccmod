@@ -1313,7 +1313,7 @@ PIKECLASS ValueIterator
     if(!vis) RETURN(0);
 
     valueb = vis->object_data->valuei;
-    if(valuei == valueb) RETURN(1);
+    if(*valuei == *valueb) RETURN(1);
     else RETURN(0);
   }
 
@@ -1419,7 +1419,7 @@ PIKECLASS TermIterator
     if(!tis) RETURN(0);
 
     termb = tis->object_data->termi;
-    if(termi == termb) RETURN(1);
+    if(*termi == *termb) RETURN(1);
     else RETURN(0);
   }
 
@@ -1581,13 +1581,15 @@ PIKECLASS MSetIterator
 
     struct object * o;
 
-    mseti2 = new MSetIterator((*mseti)++);
-
+//    mseti2 = new MSetIterator(
+(*mseti)++;
+//);
+/*
     o = fast_clone_object(MSetIterator_program);
 
     OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
-
-    push_object(o);    
+*/
+    push_object(this_object());    
   }
 
   PIKEFUN object prev()
@@ -1613,16 +1615,15 @@ PIKECLASS MSetIterator
     struct MSetIterator_struct * msis;    
     MSetIterator  *mseti;
     MSetIterator  *msetb;
-
-    if(arg->type!= T_OBJECT) RETURN(0);
+    if(arg->type!= T_OBJECT) {RETURN(0);}
     o = arg->u.object;
     mseti = (MSetIterator*)THIS->object_data->mseti;
     msis = OBJ2_MSETITERATOR(o);
-    if(!msis) RETURN(0);
+    if(!msis) {RETURN(0);}
 
     msetb = msis->object_data->mseti;
-    if(mseti == msetb) RETURN(1);
-    else RETURN(0);
+    if(*mseti == *msetb) {RETURN(1);}
+    else {RETURN(0);}
   }
 
 INIT
@@ -1768,7 +1769,7 @@ INIT
 {
     XAPIAN_MSET_OBJECT_DATA * dta = 
 	(XAPIAN_MSET_OBJECT_DATA*)malloc(sizeof(XAPIAN_MSET_OBJECT_DATA));
-printf("allocated mset data.\n");
+//printf("allocated mset data.\n");
     if (!dta)
         Pike_error("init_sample: Out of memory!\n");
 
@@ -1859,7 +1860,6 @@ PIKEFUN object end()
   mseti = mset->end();
 
   mseti2 = new MSetIterator(mseti);
-
   o = fast_clone_object(MSetIterator_program);
 
   OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
@@ -2038,7 +2038,7 @@ INIT
 {
     XAPIAN_RSET_OBJECT_DATA * dta = 
 	(XAPIAN_RSET_OBJECT_DATA*)malloc(sizeof(XAPIAN_RSET_OBJECT_DATA));
-printf("allocated eset data.\n");
+//printf("allocated eset data.\n");
     if (!dta)
         Pike_error("init_sample: Out of memory!\n");
 
@@ -2286,7 +2286,7 @@ INIT
 {
     XAPIAN_ESET_OBJECT_DATA * dta = 
 	(XAPIAN_ESET_OBJECT_DATA*)malloc(sizeof(XAPIAN_ESET_OBJECT_DATA));
-printf("allocated eset data.\n");
+//printf("allocated eset data.\n");
     if (!dta)
         Pike_error("init_sample: Out of memory!\n");
 
@@ -3025,7 +3025,7 @@ PIKEFUN void destroy()
 
     if(db) 
     {
-      printf("deleting db\n");
+      //printf("deleting db\n");
       delete db;
     }
 }
@@ -3161,7 +3161,7 @@ PIKEFUN int add_document(object document)
   }
   catch(Xapian::InvalidArgumentError &e)
   {
-    printf("%s\n",e.get_msg().c_str());
+    //printf("%s\n",e.get_msg().c_str());
     Pike_error("InvalidArgumentError\n");
   }
   pop_n_elems(args);

@@ -18,10 +18,11 @@ int main(int argc, array argv)
   write("got %d hits.\n", mset->size());
 
   object i;
-
-  for(i = mset->begin(); i != mset->end(); i->next())
+  i = mset->begin();
+  while(i!= mset->end())
   {
     werror(i->get_percent() + "%: " + i->get_document()->get_data()  + "\n");
+    i = i->next();
   }
 
   return 0;

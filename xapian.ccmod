@@ -294,7 +294,7 @@ EXIT
 
     Weight  *weight;
     weight = THIS->object_data->weight;
-    printf("shutting down!\n");
+//    printf("shutting down!\n");
     free(THIS->object_data);
   }
 }
@@ -464,7 +464,7 @@ EXIT
 
     Stopper  *stopper;
     stopper = THIS->object_data->stopper;
-    printf("shutting down!\n");
+ //   printf("shutting down!\n");
     free(THIS->object_data);
   }
 }
@@ -655,7 +655,7 @@ EXIT
 
     Stem  *stem;
     stem = THIS->object_data->stem;
-    printf("shutting down!\n");
+ //   printf("shutting down!\n");
     free(THIS->object_data);
   }
 }
@@ -1519,6 +1519,7 @@ PIKECLASS MSetIterator
     Document doc;
     Document *doc2;
     struct object * o;
+    try {
     mseti = (MSetIterator*)THIS->object_data->mseti;
     doc = mseti->get_document();    
     doc2 = new Document(doc);
@@ -1527,6 +1528,13 @@ PIKECLASS MSetIterator
     OBJ2_DOCUMENT(o)->object_data->document = doc2;
 
     push_object(o);
+  }
+  catch(RangeError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("RangeError\n");
+  }
+
   }
 
   PIKEFUN int get_docid()
@@ -1598,7 +1606,6 @@ PIKECLASS MSetIterator
 
     push_object(o);    
   }
-
 
   PIKEFUN int `==(mixed arg)
   {

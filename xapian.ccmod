@@ -3807,6 +3807,37 @@ PIKEFUN int has_positions()
   push_int(i?1:0);
 }
 
+/*! @decl TermIterator synonyms_iterator(string term)
+ *!  Get an iterator for the synonyms of a term.
+ *!  @returns
+ *!    a @[TermIterator] object which can be passed to @[foreach]()
+ */
+PIKEFUN object synonyms_iterator(string term)
+{
+  Database  *db;
+
+  string str((const char *)term->str, (size_t)term->len);
+
+  db = (Database*)THIS->object_data->database;
+
+
+  TermIterator ti;
+  TermIterator * ti2;
+  struct object * o;
+
+  ti = db->synonyms_begin(str);
+  ti2 = new TermIterator(ti);
+
+  o = fast_clone_object(TermIterator_program);
+
+  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->synonyms_end(str));
+
+  push_object(o);    
+}
+
+
+
 /*  Database.object get_document(int id) */
 /*! @decl object get_document(int id)
  *!
@@ -3850,6 +3881,29 @@ PIKEFUN object get_document(int id)
 
 }
 
+/*! @decl string get_spelling_suggestion(string word, int max_edit_distance)
+ *! Suggest a spelling correction.
+ *!
+ *! @param word
+ *! The potentially misspelled word.
+ *! @param max_edit_distance 	
+ *! Only consider words which are at most max_edit_distance edits from 
+ *! word. An edit is a character insertion, deletion, or the transposition 
+ *! of two adjacent characters (a reasonable starting value is 2).
+ */
+PIKEFUN string get_spelling_suggestion(string word, int max_edit_distance)
+{
+  Database  *db;
+
+  db = (Database*)THIS->object_data->database;
+
+  string str((const char *)word->str, (size_t)word->len);
+  string nstr = db->get_spelling_suggestion(str, max_edit_distance);
+
+  pop_n_elems(args);
+
+  push_text(str.c_str());
+}
 /*  Database.string get_description() */
 /*! @decl string get_description()
  *!

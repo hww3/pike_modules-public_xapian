@@ -4615,6 +4615,32 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function 
 
   push_object(o);
 }
+/*! @decl object get_matching_terms(int docid)
+ *!
+ *! @returns
+ *!   a @[TermIterator] object which can also be passed to @[foreach]()
+ */
+PIKEFUN object get_matching_terms(int docid)
+{
+  TermIterator ti;
+  TermIterator * ti2;
+  struct object * o;
+
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+
+
+  ti = enquire->get_matching_terms_begin(docid);
+  ti2 = new TermIterator(ti);
+
+  o = fast_clone_object(TermIterator_program);
+
+  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_TERMITERATOR(o)->tie = new TermIterator(enquire->get_matching_terms_end(docid));
+
+  push_object(o);    
+
+}
 
 /*  Enquire.string get_description() */
 /*! @decl string get_description()

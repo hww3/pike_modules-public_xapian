@@ -24,16 +24,23 @@ werror("Query: %O\n", query);
     werror(i->get_percent() + "%: " + i->get_document()->get_value(1)  + "\n");
     foreach(i->get_document()->value_iterator(); int id; object v)
     {
-      werror(" value %d: %s\n", id, v->get_value());
+      werror("  value %d: %s\n", id, v->get_value());
     }
+      werror("  matching terms:");
+    foreach(e->get_matching_terms(i->get_docid()); ; mixed term)
+    {
+      werror(" %s", term->get_term());
+    }
+    werror("\n");
+/*
     foreach(i->get_document()->term_iterator(); int id; object v)
     {
-      werror(" term %d: %s\n", id, v->get_term());
+      werror(" term %d: %s, at ", id, v->get_term());
         foreach(v->position_iterator(); int ip; object p)
-          werror("    position %d: %d\n", ip, p->get_position());
- 
+          werror(p->get_position() + " ");
+      werror("\n");
     }
-//    i->next();
+*/
   }
 
   return 0;

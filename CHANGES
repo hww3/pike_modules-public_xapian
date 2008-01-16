@@ -1,3 +1,7 @@
+Version 1.3
+
+- Added Database->get_spelling_suggestion() and Database->synonyms_iterator
+
 Version 1.2
 
 - Documented up to but not including PositionIterator

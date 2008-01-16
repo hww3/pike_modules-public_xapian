@@ -1,12 +1,13 @@
 Version 1.2
-- Documented up to but not including positioniterator
+
+- Documented up to but not including PositionIterator
 - Compiles properly against Xapian 1.0.x
 - Added _sprintf() methods to all classes
 - Added PositionIterator
 - Added TermIterator->position_iterator()
 - Added Document->value_iterator() and Document->term_iterator()
 - Added pike iterator interface for ESets, MSets ValueIterators, 
-    PositionITerators and TermIterators
+    PositionIterators and TermIterators
 - Removed most of the C++ style iterator interface for ESets, MSets, 
     ValueIterators and TermIterators
 - Added some flags from QueryParser

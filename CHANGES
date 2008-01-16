@@ -1,5 +1,5 @@
 Version 1.2
-
+- Documented up to but not including positioniterator
 - Compiles properly against Xapian 1.0.x
 - Added _sprintf() methods to all classes
 - Added PositionIterator

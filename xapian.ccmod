@@ -2,6 +2,9 @@
  */
 
 /*! @module Xapian
+ *!  An interface to the Xapian full text engine.
+ *! 
+ *!  For details, please see http://www.xapian.org
  */
 
 #define _GNU_SOURCE
@@ -135,7 +138,7 @@ CVAR XAPIAN_WEIGHT_OBJECT_DATA   *object_data;
 /*  Weight.int get_sumpart_needs_doclength() */
 /*! @decl int get_sumpart_needs_doclength()
  *!
- *!  
+ *! returns false if the weight object doesn't need doclength   
  *! @returns
  *!  
  *!
@@ -153,7 +156,11 @@ PIKEFUN int get_sumpart_needs_doclength()
 /*  Weight.float get_maxpart() */
 /*! @decl float get_maxpart()
  *!
+ *!  Gets the maximum value that @[get_sumpart]() may return. 
  *!  
+ *!  This is used in optimising searches, by having the postlist tree 
+ *!  decay appropriately when parts of it can have limited, or no, further 
+ *!  effect.
  *! @returns
  *!  
  *!
@@ -171,7 +178,9 @@ PIKEFUN float get_maxpart()
 /*  Weight.float get_maxextra() */
 /*! @decl float get_maxextra()
  *!
+ *!  Gets the maximum value that @[get_sumextra]() may return. 
  *!  
+ *!  This is used in optimising searches.
  *! @returns
  *!  
  *!
@@ -189,10 +198,14 @@ PIKEFUN float get_maxextra()
 /*  Weight.float get_sumextra(int len) */
 /*! @decl float get_sumextra(int len)
  *!
- *!  
+ *!  Get an extra weight for a document to add to the sum calculated over 
+ *!  the query terms. 
+ *! 
+ *! This returns a weight for a given document, and is used by some 
+ *! weighting schemes to account for influence such as document length.
  *! @param len
- *!  
-* !
+ *!  the (unnormalised) document length.
+ *!
  *! @returns
  *!  
  *!
@@ -209,13 +222,16 @@ PIKEFUN float get_sumextra(int len)
 
 /*  Weight.float get_sumpart(int wdf, int len) */
 /*! @decl float get_sumpart(int wdf, int len)
- *!
+ *!Get a weight which is part of the sum over terms being performed.
+ *! 
+ *! This returns a weight for a given term and document. These weights are 
+ *! summed to give a total weight for the document.
  *!  
  *! @param wdf
- *!  
+ *!  the within document frequency of the term.
 * !
  *! @param len
- *!  
+ *!  the (unnormalised) document length.
 * !
  *! @returns
  *!  
@@ -235,7 +251,7 @@ PIKEFUN float get_sumpart(int wdf, int len)
 /*  Weight.string serialise() */
 /*! @decl string serialise()
  *!
- *!  
+ *!  Serialise object parameters into a string.
  *! @returns
  *!  
  *!
@@ -253,7 +269,9 @@ PIKEFUN string serialise()
 /*  Weight.string name() */
 /*! @decl string name()
  *!
- *!  
+ *!  Name of the weighting scheme.
+ *! 
+ *! If the subclass is called FooWeight, this should return "Foo".
  *! @returns
  *!  
  *!
@@ -317,6 +335,7 @@ EXIT
 
 /*! @class BM25Weight
  *! @inherit Weight
+ *! BM25 weighting scheme.
 */
 
 PIKECLASS BM25Weight
@@ -353,6 +372,7 @@ PIKECLASS BM25Weight
 
 /*! @class BoolWeight
  *! @inherit Weight
+ *! Boolean weighting scheme (everything gets 0).
 */
 
 PIKECLASS BoolWeight
@@ -374,6 +394,11 @@ PIKECLASS BoolWeight
 
 /*! @class TradWeight
  *! @inherit Weight
+ *! Traditional probabilistic weighting scheme.
+ *! 
+ *! This class implements the Traditional Probabilistic Weighting scheme, 
+ *! as described by the early papers on Probabilistic Retrieval. @[BM25Weight]
+ *! generally gives better results. 
 */
 
 PIKECLASS TradWeight
@@ -394,6 +419,7 @@ PIKECLASS TradWeight
 */
 
 /*! @class Stopper
+ *! Base class for stop-word decision functor. 
 */
 
 PIKECLASS Stopper
@@ -403,9 +429,9 @@ CVAR XAPIAN_STOPPER_OBJECT_DATA   *object_data;
 /*  Stopper.int `()(string word) */
 /*! @decl int `()(string word)
  *!
- *!  
+ *!  	Is term a stop-word?   
  *! @returns
- *!  
+ *!  1 if true, 0 otherwise.
  *!
  */
 PIKEFUN int `()(string word)
@@ -506,7 +532,8 @@ EXIT
 
 /*! @class SimpleStopper
  *! @inherit Stopper
-*/
+ *! Simple implementation of Stopper class - this will suit most users.
+ */
 
 PIKECLASS SimpleStopper
 {
@@ -538,6 +565,9 @@ PIKECLASS SimpleStopper
     pop_n_elems(args);
   }
 
+/*! @decl void add(string word)
+ *! Add a single stop word.
+ */
   PIKEFUN void add(string word)
   {
     SimpleStopper * stopper;
@@ -555,6 +585,7 @@ PIKECLASS SimpleStopper
 */
 
 /*! @class Stem
+ *! Class representing a stemming algorithm.
 */
 
 PIKECLASS Stem
@@ -565,11 +596,30 @@ CVAR XAPIAN_STEM_OBJECT_DATA   *object_data;
 /*  Stem.void create(string language) */
 /*! @decl void create(string language)
  *!
- *!  
+ *!  Construct a @[Stem] object for a particular language.
  *! @param language
- *!  
-* !
- *!
+ *!      	Either the English name for the language or the two letter ISO639 code.
+*!
+*! The following language names are understood (aliases follow the name):
+*!
+*!    * none - don't stem terms
+*!    * danish (da)
+*!    * dutch (nl)
+*!    * english (en) - Martin Porter's 2002 revision of his stemmer
+*!    * english_lovins (lovins) - Lovin's stemmer
+*!    * english_porter (porter) - Porter's stemmer as described in his 1980 paper
+*!    * finnish (fi)
+*!    * french (fr)
+*!    * german (de)
+*!    * italian (it)
+*!    * norwegian (no)
+*!    * portuguese (pt)
+*!    * russian (ru)
+*!    * spanish (es)
+*!    * swedish (sv)
+*!
+* ! @note
+ *!  an error will be thrown if the specified language is unknown.
  */
 PIKEFUN void create(string language)
 {
@@ -608,14 +658,14 @@ PIKEFUN void create()
 }
 
 /*  Stem.string stem_word(string word) */
-/*! @decl string stem_word(string word)
- *!
+/*! @decl string `()(string word)
+ *!   stem a word
  *!  
  *! @param word
- *!  
+ *!   word to be stemmed
 * !
  *! @returns
- *!  
+ *!   the word stem  
  *!
  */
 PIKEFUN string `()(string word)
@@ -715,6 +765,9 @@ EXIT
 */
 
 /*! @class Query
+*! Class representing a query.
+*!
+*! Queries are represented as a tree of objects. 
 */
 
 PIKECLASS Query
@@ -726,7 +779,13 @@ CVAR XAPIAN_QUERY_OBJECT_DATA   *object_data;
 /*  Query.void create() */
 /*! @decl void create()
  *!
- *!  
+ *! Default constructor: makes an empty query which matches no documents.
+ *! 
+ *! Also useful for defining a Query object to be assigned to later.
+ *!
+ *! @note
+ *! An exception will be thrown if an attempt is made to use an undefined 
+ *! query when building up a composite query.
  *!
  */
 PIKEFUN void create()
@@ -749,7 +808,7 @@ PIKEFUN void create()
 /*  Query.void create(string term, int wqf, int pos) */
 /*! @decl void create(string term, int wqf, int pos)
  *!
- *!  
+ *!    A query consisting of a single term.
  *! @param term
  *!  
 * !
@@ -782,7 +841,7 @@ PIKEFUN void create(string term, int wqf, int pos)
 /*  Query.void create(int op, string left, string right) */
 /*! @decl void create(int op, string left, string right)
  *!
- *!  
+ *!  A query consisting of two terms, opp-ed together.
  *! @param op
  *!  
 * !
@@ -817,7 +876,7 @@ PIKEFUN void create(int op, string left, string right)
 /*  Query.void create(int op, object left, object right) */
 /*! @decl void create(int op, object left, object right)
  *!
- *!  
+ *!  A query consisting of two subqueries, opp-ed together.
  *! @param op
  *!  
 * !
@@ -852,9 +911,10 @@ PIKEFUN void create(int op, object left, object right)
   }
 }
 
-/*  Query.void create(int op, object query) */
-/*! @decl void create(int op, object query)
- *!
+/*  Query.void create(int op, Query query) */
+/*! @decl void create(int op, Query query)
+ *! Apply the specified operator to a single @[Query] object, with a 
+ *! double parameter.
  *!  
  *! @param op
  *!  
@@ -864,7 +924,7 @@ PIKEFUN void create(int op, object left, object right)
 * !
  *!
  */
-PIKEFUN void create(int op, object query)
+PIKEFUN void create(int op, object query, float param)
 {
   Query * q;
 
@@ -888,7 +948,10 @@ PIKEFUN void create(int op, object query)
 /*  Query.int get_length() */
 /*! @decl int get_length()
  *!
- *!  
+ *!  Get the length of the query, used by some ranking formulae.
+ *!
+ *! This value is calculated automatically - if you want to override it 
+ *! you can pass a different value to @[Enquire.set_query]().
  *! @returns
  *!  
  *!
@@ -904,7 +967,8 @@ PIKEFUN int get_length()
 
 /*  Query.int empty() */
 /*! @decl int empty()
- *!
+ *!  Test if the query is empty (i.e. was constructed using the default 
+ *! constructor).
  *!  
  *! @returns
  *!  
@@ -980,15 +1044,71 @@ EXIT
 
 EXTRA
 {
+/*! @decl constant OP_AND
+ *! Return iff both subqueries are satisfied.
+ */
 add_integer_constant("OP_AND", Query::OP_AND, 0);
+/*! @decl constant OP_OR
+ *! Return if either subquery is satisfied. 
+ */
 add_integer_constant("OP_OR", Query::OP_OR, 0);
+/*! @decl constant OP_AND_NOT
+ *! Return if left but not right satisfied.
+ */
 add_integer_constant("OP_AND_NOT", Query::OP_AND_NOT, 0);
+/*! @decl constant OP_XOR
+ *! Return if one query satisfied, but not both.
+ */
 add_integer_constant("OP_XOR", Query::OP_XOR, 0);
+/*! @decl constant OP_AND_MAYBE
+ *! Return iff left satisfied, but use weights from both.
+ */
 add_integer_constant("OP_AND_MAYBE", Query::OP_AND_MAYBE, 0);
+/*! @decl constant OP_FILTER
+ *! As AND, but use only weights from left subquery.
+ */
 add_integer_constant("OP_FILTER", Query::OP_FILTER, 0);
+/*! @decl constant OP_NEAR
+ *! Find occurrences of a list of terms with all the terms occurring 
+ *! within a specified window of positions.
+ *! 
+ *! Each occurrence of a term must be at a different position, but the 
+ *! order they appear in is irrelevant.
+ *! 
+ *! The window parameter should be specified for this operation, but will 
+ *! default to the number of terms in the list. 
+ */
 add_integer_constant("OP_NEAR", Query::OP_NEAR, 0);
+/*! @decl constant OP_PHRASE
+ *!  Find occurrences of a list of terms with all the terms occurring 
+ *! within a specified window of positions, and all the terms appearing 
+ *! in the order specified.
+ *! 
+ *! Each occurrence of a term must be at a different position.
+ *! 
+ *! The window parameter should be specified for this operation, but will 
+ *! default to the number of terms in the list. 
+ */
 add_integer_constant("OP_PHRASE", Query::OP_PHRASE, 0);
+/*! @decl constant OP_ELITE_SET
+ *! Select an elite set from the subqueries, and perform a query with 
+ *! these combined as an OR query. 
+ */
 add_integer_constant("OP_ELITE_SET", Query::OP_ELITE_SET, 0);
+/*! @decl constant OP_VALUE_RANGE
+ *! Filter by a range test on a document value.
+ */
+add_integer_constant("OP_VALUE_RANGE", Query::OP_VALUE_RANGE, 0);
+/*! @decl constant OP_SCALE_WEIGHT
+ *! Scale the weight of a subquery by the specified factor.
+ *! 
+ *! A factor of 0 means this subquery will contribute no weight to the 
+ *! query - it will act as a purely boolean subquery.
+ *! 
+ *! If the factor is negative, an error will be 
+ *! thrown. 
+ */
+add_integer_constant("OP_SCALE_WEIGHT", Query::OP_SCALE_WEIGHT, 0);
 }
 
 }
@@ -1616,6 +1736,7 @@ EXIT
 */
 
 /*! @class Document
+ *! A document in the database - holds data, values, terms, and postings.
 */
 
 PIKECLASS Document
@@ -1650,7 +1771,8 @@ PIKEFUN void create()
 /*  Document.void set_data(string data) */
 /*! @decl void set_data(string data)
  *!
- *!  
+ *!  Set data stored in the document.
+ *!
  *! @param data
  *!  
 * !
@@ -1667,10 +1789,10 @@ PIKEFUN void set_data(string data)
   pop_n_elems(args);
 }
 
-/*! @decl object value_iterator()
- *!
+/*! @decl ValueIterator value_iterator()
+ *! Get an iterator for the values in this document.
  *!  @returns
- *!    an object which can be passed to @[foreach]()
+ *!    a @[ValueIterator] object which can be passed to @[foreach]()
  *!  
  *!
  */
@@ -1694,10 +1816,10 @@ PIKEFUN object value_iterator()
   push_object(o);    
 }
 
-/*! @decl object term_iterator()
- *!
+/*! @decl TermIterator term_iterator()
+ *!  Get an iterator for the terms in this document.
  *!  @returns
- *!    an object which can be passed to @[foreach]()
+ *!    a @[TermIterator] object which can be passed to @[foreach]()
  */
 PIKEFUN object term_iterator()
 {
@@ -1722,7 +1844,7 @@ PIKEFUN object term_iterator()
 /*  Document.void clear_terms() */
 /*! @decl void clear_terms()
  *!
- *!  
+ *! Remove all terms (and postings) from the document.  
  *!
  */
 PIKEFUN void clear_terms()
@@ -1736,7 +1858,7 @@ PIKEFUN void clear_terms()
 /*  Document.void clear_values() */
 /*! @decl void clear_values()
  *!
- *!  
+ *!  Remove all values associated with the document.
  *!
  */
 PIKEFUN void clear_values()
@@ -1749,7 +1871,10 @@ PIKEFUN void clear_values()
 
 /*  Document.string get_data() */
 /*! @decl string get_data()
- *!
+ *!  Get data stored in the document.
+ *! This is a potentially expensive operation, and shouldn't normally be 
+ *! used in a match decider function. Put data for use by match deciders 
+ *! in a value instead.
  *!  
  *! @returns
  *!  
@@ -1804,12 +1929,14 @@ PIKEFUN string _sprintf(int conversion_type, mapping params)
 
 /*  Document.string get_value(int val) */
 /*! @decl string get_value(int val)
- *!
+ *!  Get value by number.
  *!  
  *! @param val
- *!  
+ *!   	The number of the value.
 * !
  *! @returns
+ *! Returns an empty string if no value with the given number is present 
+ *! in the document.
  *!  
  *!
  */
@@ -1831,7 +1958,7 @@ PIKEFUN string get_value(int val)
 /*  Document.void remove_value(int val) */
 /*! @decl void remove_value(int val)
  *!
- *!  
+ *! Remove any value with the given number.  
  *! @param val
  *!  
 * !
@@ -1850,12 +1977,14 @@ PIKEFUN void remove_value(int val)
 /*  Document.void add_term(string tname, int termcount) */
 /*! @decl void add_term(string tname, int termcount)
  *!
- *!  
+ *! Add a term to the document, without positional information.
+ *!
+ *! Any existing positional information for the term will be left unmodified.  
  *! @param tname
- *!  
+ *!  The name of the term.
 * !
  *! @param termcount
- *!  
+ *!  The increment that will be applied to the wdf for this term. 
 * !
  *!
  */
@@ -1873,16 +2002,21 @@ PIKEFUN void add_term(string tname, int termcount)
 
 /*  Document.void add_posting(string tname, int termpos, int termcount) */
 /*! @decl void add_posting(string tname, int termpos, int termcount)
+ *!Add an occurrence of a term at a particular position.
  *!
+ *! Multiple occurrences of the term at the same position are represented 
+ *! only once in the positional information, but do increase the wdf.
+ *!
+ *! If the term is not already in the document, it will be added to it.
  *!  
  *! @param tname
- *!  
+ *!  The name of the term.
 * !
  *! @param termpos
- *!  
+ *!  The position of the term.
 * !
  *! @param termcount
- *!  
+ *!  The increment that will be applied to the wdf for this term.
 * !
  *!
  */
@@ -1910,12 +2044,12 @@ PIKEFUN void add_posting(string tname, int termpos, int termcount)
 
 /*  Document.void remove_term(string tname) */
 /*! @decl void remove_term(string tname)
- *!
+ *!  Remove a term and all postings associated with it.
  *!  
  *! @param tname
- *!  
-* !
- *!
+ *!  The name of the term.
+* ! @note
+ *!  An error will be thrown if the term is not present in the document.
  */
 PIKEFUN void remove_term(string tname)
 {
@@ -1937,9 +2071,51 @@ PIKEFUN void remove_term(string tname)
   pop_n_elems(args);
 }
 
+/*! @decl void remove_posting(string tname, int tpos, int wdfdec)
+ *!Remove a posting of a term from the document.
+ *!
+ *! Note that the term will still index the document even if all 
+ *! occurrences are removed. To remove a term from a document completely, 
+ *! use @[remove_term]().
+ *!
+ *! @param tname
+ *!  The name of the term.
+ *! @param tpos
+ *!  The position of the term.
+ *! @param wdfdec
+ *!   The decrement that will be applied to the wdf when removing this 
+ *!   posting. The wdf will not go below the value of 0.
+ *! 
+ *! @note
+ *!   An error will be thrown if the term is not at the position specified 
+ *!   in the position list for this term in this document or if the term 
+ *!   is not in the document.
+ */
+PIKEFUN void remove_posting(string tname, int tpos, int wdfdec)
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  string str(tname->str, tname->len);
+  
+  try
+  {
+    doc->remove_posting(str, tpos, wdfdec);
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }
+
+  pop_n_elems(args);
+}
+
 /*  Document.void add_value(int valueno, string value) */
 /*! @decl void add_value(int valueno, string value)
+ *!Add a new value.
  *!
+ *! It will replace any existing value with the same number. 
  *!  
  *! @param valueno
  *!  
@@ -1963,9 +2139,9 @@ PIKEFUN void add_value(int valueno, string value)
 /*  Document.int termlist_count() */
 /*! @decl int termlist_count()
  *!
- *!  
+ *! Count the terms in this document.  
  *! @returns
- *!  
+ *!  the number of terms in the document.
  *!
  */
 PIKEFUN int termlist_count()
@@ -1984,9 +2160,9 @@ PIKEFUN int termlist_count()
 /*  Document.int values_count() */
 /*! @decl int values_count()
  *!
- *!  
+ *!  Count the values in this document. 
  *! @returns
- *!  
+ *!  the number of values in the document.
  *!
  */
 PIKEFUN int values_count()

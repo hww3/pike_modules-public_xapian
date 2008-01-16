@@ -11,18 +11,29 @@ int main(int argc, array argv)
   object query;
   array terms = argv[2..];
   query = q->parse_query(terms*" ", 0);
-
+werror("Query: %O\n", query);
   e->set_query(query, 0);
   object mset = e->get_mset(0, 100, 10);
 
   write("got %d hits.\n", mset->size());
-
-  object i;
-  i = mset->begin();
-  while( i != mset->end())
+//  object i;
+//  i = mset->begin();
+//  while( i != mset->end())
+  foreach(mset; int ix; object i)
   {
     werror(i->get_percent() + "%: " + i->get_document()->get_value(1)  + "\n");
-    i->next();
+    foreach(i->get_document()->value_iterator(); int id; object v)
+    {
+      werror(" value %d: %s\n", id, v->get_value());
+    }
+    foreach(i->get_document()->term_iterator(); int id; object v)
+    {
+      werror(" term %d: %s\n", id, v->get_term());
+        foreach(v->position_iterator(); int ip; object p)
+          werror("    position %d: %d\n", ip, p->get_position());
+ 
+    }
+//    i->next();
   }
 
   return 0;

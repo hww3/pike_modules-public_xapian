@@ -30,6 +30,9 @@ using namespace std;
 #define OBJ2_STOPPER(o) ((struct Stopper_struct *)get_storage(o, Stopper_program))
 #define OBJ2_MSETITERATOR(o) ((struct MSetIterator_struct *)get_storage(o, MSetIterator_program))
 #define OBJ2_ESETITERATOR(o) ((struct ESetIterator_struct *)get_storage(o, ESetIterator_program))
+#define OBJ2_VALUEITERATOR(o) ((struct ValueIterator_struct *)get_storage(o, ValueIterator_program))
+#define OBJ2_TERMITERATOR(o) ((struct TermIterator_struct *)get_storage(o, TermIterator_program))
+#define OBJ2_POSITIONITERATOR(o) ((struct PositionIterator_struct *)get_storage(o, PositionIterator_program))
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
 #define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
 #define OBJ2_QUERY(o) ((struct Query_struct *)get_storage(o, Query_program))
@@ -37,6 +40,9 @@ using namespace std;
 
 extern "C" struct program * Document_program;
 extern "C" struct program * MSetIterator_program;
+extern "C" struct program * ValueIterator_program;
+extern "C" struct program * TermIterator_program;
+extern "C" struct program * PositionIterator_program;
 extern "C" struct program * MSet_program;
 extern "C" struct program * Stem_program;
 extern "C" typedef struct
@@ -93,6 +99,11 @@ extern "C" typedef struct
 {
     ValueIterator *valuei;
 } XAPIAN_VALUEITERATOR_OBJECT_DATA;
+
+extern "C" typedef struct
+{
+    PositionIterator *positioni;
+} XAPIAN_POSITIONITERATOR_OBJECT_DATA;
 
 extern "C" typedef struct
 {
@@ -985,6 +996,625 @@ add_integer_constant("OP_ELITE_SET", Query::OP_ELITE_SET, 0);
 /*!  @endclass
 */
 
+/*! @class PositionIterator
+*/
+
+PIKECLASS PositionIterator
+{
+  CVAR PositionIterator * pie;
+  CVAR int current_index;
+  CVAR XAPIAN_POSITIONITERATOR_OBJECT_DATA   *object_data;
+
+  PIKEFUN object next()
+  {
+    PositionIterator  *pi;
+    pi = THIS->object_data->positioni;
+
+    struct object * o;
+(*pi)++;
+
+   THIS->current_index++;
+    if(*pi == *(THIS->pie)) {push_int(0); return;}
+    push_int(1);    
+  }
+
+  PIKEFUN mixed index()
+  {
+    push_int(THIS->current_index);
+  }
+
+  PIKEFUN object value()
+  {
+    push_object(this_object());
+  }
+
+  PIKEFUN int `==(mixed arg)
+  {
+    struct object * o;
+    PositionIterator  *posi;
+    PositionIterator  *posb;
+    struct PositionIterator_struct * pis;    
+
+    if(arg->type!= T_OBJECT) RETURN(0);
+    o = arg->u.object;
+    posi = (PositionIterator*)THIS->object_data->positioni;
+    pis = OBJ2_POSITIONITERATOR(o);
+    if(!pis) RETURN(0);
+
+    posb = pis->object_data->positioni;
+    if(*posi == *posb) RETURN(1);
+    else RETURN(0);
+  }
+
+/*! @decl void skip_to(int pos)
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+  PIKEFUN void skip_to(int pos)
+  {
+    
+    PositionIterator  *posi;
+    try 
+    {
+      posi = (PositionIterator*)THIS->object_data->positioni;
+      posi->skip_to(pos);
+      pop_stack();
+      push_int(0);
+    }
+    catch(RangeError &e)
+    {
+      pop_n_elems(args);
+      Pike_error("RangeError\n");
+    }
+
+
+  }
+
+/*! @decl int get_position()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+  PIKEFUN int get_position()
+  {
+    PositionIterator  *posi;
+    int i;
+    try
+    {
+      posi = (PositionIterator*)THIS->object_data->positioni;
+      i = (*(*posi));
+      push_int(i);
+    }
+    catch(RangeError &e)
+    {
+      pop_n_elems(args);
+      Pike_error("RangeError\n");
+    }
+  }
+
+  PIKEFUN mixed `+=(int i)
+  {
+    PositionIterator  *pi;
+    pi = THIS->object_data->positioni;
+    
+    for(int x = 0; x < i; x++)
+    {
+      (*pi)++;
+      if(*pi == *(THIS->pie)) {
+        pop_stack(); push_int(0); return;}
+    }
+    THIS->current_index++;
+    pop_stack();
+    push_object(this_object());
+  }
+ 
+  PIKEFUN int `!()
+  {
+    PositionIterator  *pi;
+    pi = THIS->object_data->positioni;
+    if(*pi == *(THIS->pie)) { push_int(1); }
+    else
+      push_int(0);
+  }
+
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+PIKEFUN string get_description()
+{
+  PositionIterator  *pi;
+  pi = THIS->object_data->positioni;
+
+  string str = pi->get_description();
+
+  push_text(str.c_str());
+}
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  PositionIterator  *it;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    it = THIS->object_data->positioni;
+
+    string str = it->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
+INIT
+{
+    XAPIAN_POSITIONITERATOR_OBJECT_DATA * dta = 
+	(XAPIAN_POSITIONITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_POSITIONITERATOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->positioni = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    PositionIterator  *positioni;
+    positioni = THIS->object_data->positioni;
+    if(positioni) delete positioni;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*!  @endclass
+*/
+
+/*! @class ValueIterator
+*/
+
+PIKECLASS ValueIterator
+{
+  CVAR ValueIterator * vie;
+  CVAR int current_index;
+  CVAR XAPIAN_VALUEITERATOR_OBJECT_DATA   *object_data;
+
+  PIKEFUN object next()
+  {
+    ValueIterator  *valuei;
+    valuei = THIS->object_data->valuei;
+    ValueIterator *valuei2;
+
+    struct object * o;
+
+    valuei2 = new ValueIterator((*valuei)++);
+
+    o = fast_clone_object(ValueIterator_program);
+
+    OBJ2_VALUEITERATOR(o)->object_data->valuei = valuei;
+
+    push_object(o);    
+  }
+
+  PIKEFUN mixed index()
+  {
+    push_int(THIS->current_index);
+  }
+
+  PIKEFUN object value()
+  {
+    push_object(this_object());
+  }
+
+  PIKEFUN int `==(mixed arg)
+  {
+    struct object * o;
+    ValueIterator  *valuei;
+    ValueIterator  *valueb;
+    struct ValueIterator_struct * vis;    
+
+    if(arg->type!= T_OBJECT) RETURN(0);
+    o = arg->u.object;
+    valuei = (ValueIterator*)THIS->object_data->valuei;
+    vis = OBJ2_VALUEITERATOR(o);
+    if(!vis) RETURN(0);
+
+    valueb = vis->object_data->valuei;
+    if(*valuei == *valueb) RETURN(1);
+    else RETURN(0);
+  }
+
+/*! @decl int get_valueno()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+  PIKEFUN int get_valueno()
+  {
+    
+    ValueIterator  *valuei;
+    valueno i;
+    try 
+    {
+      valuei = (ValueIterator*)THIS->object_data->valuei;
+      i = valuei->get_valueno();
+      push_int((INT_TYPE)i);
+    }
+    catch(RangeError &e)
+    {
+      pop_n_elems(args);
+      Pike_error("RangeError\n");
+    }
+
+
+  }
+
+/*! @decl int get_value()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+  PIKEFUN string get_value()
+  {
+    ValueIterator  *valuei;
+    string i;
+
+    try
+    {
+      valuei = (ValueIterator*)THIS->object_data->valuei;
+      i = (*(*valuei));
+      push_text(i.c_str());
+    }
+    catch(RangeError &e)
+    {
+      pop_n_elems(args);
+      Pike_error("RangeError\n");
+    }
+  }
+
+  PIKEFUN mixed `+=(int i)
+  {
+    ValueIterator  *vi;
+    vi = THIS->object_data->valuei;
+    
+    for(int x = 0; x < i; x++)
+    {
+      (*vi)++;
+      if(*vi == *(THIS->vie)) {
+        pop_stack(); push_int(0); return;}
+    }
+    THIS->current_index++;
+    pop_stack();
+    push_object(this_object());
+  }
+ 
+  PIKEFUN int `!()
+  {
+    ValueIterator  *vi;
+    vi = THIS->object_data->valuei;
+    if(*vi == *(THIS->vie)) { push_int(1); }
+    else
+      push_int(0);
+  }
+
+/*  ValueIterator.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+PIKEFUN string get_description()
+{
+  ValueIterator  *valuei;
+  valuei = THIS->object_data->valuei;
+
+  string str = valuei->get_description();
+
+  push_text(str.c_str());
+}
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  ValueIterator  *it;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    it = THIS->object_data->valuei;
+
+    string str = it->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
+INIT
+{
+    XAPIAN_VALUEITERATOR_OBJECT_DATA * dta = 
+	(XAPIAN_VALUEITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_VALUEITERATOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->valuei = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    ValueIterator  *valuei;
+    valuei = THIS->object_data->valuei;
+    if(valuei) delete valuei;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*!  @endclass
+*/
+
+/*! @class TermIterator
+*/
+
+PIKECLASS TermIterator
+{
+  CVAR TermIterator * tie;
+  CVAR int current_index;
+  CVAR XAPIAN_TERMITERATOR_OBJECT_DATA   *object_data;
+
+  PIKEFUN object next()
+  {
+    TermIterator  * termi;
+    termi = THIS->object_data->termi;
+    TermIterator *termi2;
+
+    struct object * o;
+
+    termi2 = new TermIterator(++(*termi));
+
+    o = fast_clone_object(TermIterator_program);
+
+    OBJ2_TERMITERATOR(o)->object_data->termi = termi;
+
+    push_object(o);    
+  }
+
+  PIKEFUN mixed index()
+  {
+    push_int(THIS->current_index);
+  }
+
+  PIKEFUN object value()
+  {
+    push_object(this_object());
+  }
+
+  PIKEFUN int `==(mixed arg)
+  {
+    struct object * o;
+    TermIterator  *termi;
+    TermIterator  *termb;
+    struct TermIterator_struct * tis;    
+
+    if(arg->type!= T_OBJECT) RETURN(0);
+    o = arg->u.object;
+    termi = (TermIterator*)THIS->object_data->termi;
+    tis = OBJ2_TERMITERATOR(o);
+    if(!tis) RETURN(0);
+
+    termb = tis->object_data->termi;
+    if(*termi == *termb) RETURN(1);
+    else RETURN(0);
+  }
+
+/*! @decl object position_iterator()
+ *!
+ *!  @returns
+ *!    an object which can be passed to @[foreach]()
+ *!  
+ *!
+ */
+  PIKEFUN object position_iterator()
+  {
+    TermIterator  *ti;
+    ti = THIS->object_data->termi;
+
+    PositionIterator pi;
+    PositionIterator * pi2;
+    struct object * o;
+
+    pi = ti->positionlist_begin();
+    pi2 = new PositionIterator(pi);
+
+    o = fast_clone_object(PositionIterator_program);
+
+    OBJ2_POSITIONITERATOR(o)->object_data->positioni = pi2;
+    OBJ2_POSITIONITERATOR(o)->pie = new PositionIterator(ti->positionlist_end());
+
+    push_object(o);    
+  }
+
+/*! @decl int get_wdf()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+  PIKEFUN int get_wdf()
+  {
+    TermIterator  *termi;
+    termcount i;
+    termi = (TermIterator*)THIS->object_data->termi;
+    i = termi->get_wdf();
+    push_int((INT_TYPE)i);
+  }
+
+/*! @decl int get_termfreq()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+  PIKEFUN int get_termfreq()
+  {
+    TermIterator  *termi;
+    doccount i;
+    termi = (TermIterator*)THIS->object_data->termi;
+    i = termi->get_termfreq();
+    push_int((INT_TYPE)i);
+  }
+
+/*! @decl int positionlist_count()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+  PIKEFUN int positionlist_count()
+  {
+    TermIterator  *termi;
+    termcount i;
+    termi = (TermIterator*)THIS->object_data->termi;
+    i = termi->positionlist_count();
+    push_int((INT_TYPE)i);
+  }
+
+
+/*! @decl string get_term()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+  PIKEFUN string get_term()
+  {
+    TermIterator  *termi;
+    string i;
+    termi = (TermIterator*)THIS->object_data->termi;
+    i = (*(*termi));
+    push_text(i.c_str());
+  }
+
+  PIKEFUN mixed `+=(int i)
+  {
+    TermIterator  *ti;
+    ti = THIS->object_data->termi;
+    
+    for(int x = 0; x < i; x++)
+    {
+      (*ti)++;
+      if(*ti == *(THIS->tie)) {
+        pop_stack(); push_int(0); return;}
+    }
+    THIS->current_index++;
+    pop_stack();
+    push_object(this_object());
+  }
+ 
+  PIKEFUN int `!()
+  {
+    TermIterator  *ti;
+    ti = THIS->object_data->termi;
+    if(*ti == *(THIS->tie)) { push_int(1); }
+    else
+      push_int(0);
+  }
+
+/*  TermIterator.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+PIKEFUN string get_description()
+{
+  TermIterator  *termi;
+  termi = THIS->object_data->termi;
+
+  string str = termi->get_description();
+
+  push_text(str.c_str());
+}
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  TermIterator  *it;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    it = THIS->object_data->termi;
+
+    string str = it->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+
+INIT
+{
+    XAPIAN_TERMITERATOR_OBJECT_DATA * dta = 
+	(XAPIAN_TERMITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_TERMITERATOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->termi = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    TermIterator  *termi;
+    termi = THIS->object_data->termi;
+    if(termi) delete termi;
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*!  @endclass
+*/
+
 /*! @class Document
 */
 
@@ -1035,6 +1665,58 @@ PIKEFUN void set_data(string data)
   doc->set_data(str);  
 
   pop_n_elems(args);
+}
+
+/*! @decl object value_iterator()
+ *!
+ *!  @returns
+ *!    an object which can be passed to @[foreach]()
+ *!  
+ *!
+ */
+PIKEFUN object value_iterator()
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  ValueIterator vi;
+  ValueIterator * vi2;
+  struct object * o;
+
+  vi = doc->values_begin();
+  vi2 = new ValueIterator(vi);
+
+  o = fast_clone_object(ValueIterator_program);
+
+  OBJ2_VALUEITERATOR(o)->object_data->valuei = vi2;
+  OBJ2_VALUEITERATOR(o)->vie = new ValueIterator(doc->values_end());
+
+  push_object(o);    
+}
+
+/*! @decl object term_iterator()
+ *!
+ *!  @returns
+ *!    an object which can be passed to @[foreach]()
+ */
+PIKEFUN object term_iterator()
+{
+  Document  *doc;
+  doc = THIS->object_data->document;
+
+  TermIterator ti;
+  TermIterator * ti2;
+  struct object * o;
+
+  ti = doc->termlist_begin();
+  ti2 = new TermIterator(ti);
+
+  o = fast_clone_object(TermIterator_program);
+
+  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_TERMITERATOR(o)->tie = new TermIterator(doc->termlist_end());
+
+  push_object(o);    
 }
 
 /*  Document.void clear_terms() */
@@ -1350,274 +2032,6 @@ EXIT
 /*!  @endclass
 */
 
-/*! @class ValueIterator
-*/
-
-PIKECLASS ValueIterator
-{
-  CVAR XAPIAN_VALUEITERATOR_OBJECT_DATA   *object_data;
-
-  PIKEFUN object next()
-  {
-    ValueIterator  *valuei;
-    valuei = THIS->object_data->valuei;
-    ValueIterator *valuei2;
-
-    struct object * o;
-
-    valuei2 = new ValueIterator((*valuei)++);
-
-    o = fast_clone_object(ValueIterator_program);
-
-    OBJ2_VALUEITERATOR(o)->object_data->valuei = valuei;
-
-    push_object(o);    
-  }
-
-  PIKEFUN int `==(mixed arg)
-  {
-    struct object * o;
-    ValueIterator  *valuei;
-    ValueIterator  *valueb;
-    struct ValueIterator_struct * vis;    
-
-    if(arg->type!= T_OBJECT) RETURN(0);
-    o = arg->u.object;
-    valuei = (ValueIterator*)THIS->object_data->valuei;
-    vis = OBJ2_VALUEITERATOR(o);
-    if(!vis) RETURN(0);
-
-    valueb = vis->object_data->valuei;
-    if(*valuei == *valueb) RETURN(1);
-    else RETURN(0);
-  }
-
-  PIKEFUN int get_valueno()
-  {
-    ValueIterator  *valuei;
-    valueno i;
-    valuei = (ValueIterator*)THIS->object_data->valuei;
-    i = valuei->get_valueno();
-    push_int((INT_TYPE)i);
-  }
-
-  PIKEFUN string get_value()
-  {
-    ValueIterator  *valuei;
-    string i;
-    valuei = (ValueIterator*)THIS->object_data->valuei;
-    i = (*(*valuei));
-    push_text(i.c_str());
-  }
-
-
-/*  ValueIterator.string get_description() */
-/*! @decl string get_description()
- *!
- *!  
- *! @returns
- *!  
- *!
- */
-PIKEFUN string get_description()
-{
-  ValueIterator  *valuei;
-  valuei = THIS->object_data->valuei;
-
-  string str = valuei->get_description();
-
-  push_text(str.c_str());
-}
-
-PIKEFUN string _sprintf(int conversion_type, mapping params)
-{
-  ValueIterator  *it;
-  if(THIS && THIS->object_data && conversion_type == 'O')
-  {
-    it = THIS->object_data->valuei;
-
-    string str = it->get_description();
-    pop_n_elems(args);
-    push_text(str.c_str());
-  }
-  else
-  {
-    pop_n_elems(args);
-    push_int(0);
-  }
-}
-
-
-INIT
-{
-    XAPIAN_VALUEITERATOR_OBJECT_DATA * dta = 
-	(XAPIAN_VALUEITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_VALUEITERATOR_OBJECT_DATA));
-    if (!dta)
-        Pike_error("init_sample: Out of memory!\n");
-
-    dta->valuei = NULL;
-    THIS->object_data = dta;
-}
-
-EXIT 
-{
-  if(THIS->object_data)
-  {
-    ValueIterator  *valuei;
-    valuei = THIS->object_data->valuei;
-    if(valuei) delete valuei;
-    free(THIS->object_data);
-  }
-}
-
-}
-
-/*!  @endclass
-*/
-
-/*! @class TermIterator
-*/
-
-PIKECLASS TermIterator
-{
-  CVAR XAPIAN_TERMITERATOR_OBJECT_DATA   *object_data;
-
-  PIKEFUN object next()
-  {
-    TermIterator  * termi;
-    termi = THIS->object_data->termi;
-    TermIterator *termi2;
-
-    struct object * o;
-
-    termi2 = new TermIterator(++(*termi));
-
-    o = fast_clone_object(TermIterator_program);
-
-    OBJ2_TERMITERATOR(o)->object_data->termi = termi;
-
-    push_object(o);    
-  }
-
-  PIKEFUN int `==(mixed arg)
-  {
-    struct object * o;
-    TermIterator  *termi;
-    TermIterator  *termb;
-    struct TermIterator_struct * tis;    
-
-    if(arg->type!= T_OBJECT) RETURN(0);
-    o = arg->u.object;
-    termi = (TermIterator*)THIS->object_data->termi;
-    tis = OBJ2_TERMITERATOR(o);
-    if(!tis) RETURN(0);
-
-    termb = tis->object_data->termi;
-    if(*termi == *termb) RETURN(1);
-    else RETURN(0);
-  }
-
-  PIKEFUN int get_wdf()
-  {
-    TermIterator  *termi;
-    termcount i;
-    termi = (TermIterator*)THIS->object_data->termi;
-    i = termi->get_wdf();
-    push_int((INT_TYPE)i);
-  }
-
-  PIKEFUN int get_termfreq()
-  {
-    TermIterator  *termi;
-    doccount i;
-    termi = (TermIterator*)THIS->object_data->termi;
-    i = termi->get_termfreq();
-    push_int((INT_TYPE)i);
-  }
-
-  PIKEFUN int positionlist_count()
-  {
-    TermIterator  *termi;
-    termcount i;
-    termi = (TermIterator*)THIS->object_data->termi;
-    i = termi->positionlist_count();
-    push_int((INT_TYPE)i);
-  }
-
-
-  PIKEFUN string get_term()
-  {
-    TermIterator  *termi;
-    string i;
-    termi = (TermIterator*)THIS->object_data->termi;
-    i = (*(*termi));
-    push_text(i.c_str());
-  }
-
-
-/*  TermIterator.string get_description() */
-/*! @decl string get_description()
- *!
- *!  
- *! @returns
- *!  
- *!
- */
-PIKEFUN string get_description()
-{
-  TermIterator  *termi;
-  termi = THIS->object_data->termi;
-
-  string str = termi->get_description();
-
-  push_text(str.c_str());
-}
-
-PIKEFUN string _sprintf(int conversion_type, mapping params)
-{
-  TermIterator  *it;
-  if(THIS && THIS->object_data && conversion_type == 'O')
-  {
-    it = THIS->object_data->termi;
-
-    string str = it->get_description();
-    pop_n_elems(args);
-    push_text(str.c_str());
-  }
-  else
-  {
-    pop_n_elems(args);
-    push_int(0);
-  }
-}
-
-
-INIT
-{
-    XAPIAN_TERMITERATOR_OBJECT_DATA * dta = 
-	(XAPIAN_TERMITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_TERMITERATOR_OBJECT_DATA));
-    if (!dta)
-        Pike_error("init_sample: Out of memory!\n");
-
-    dta->termi = NULL;
-    THIS->object_data = dta;
-}
-
-EXIT 
-{
-  if(THIS->object_data)
-  {
-    TermIterator  *termi;
-    termi = THIS->object_data->termi;
-    if(termi) delete termi;
-    free(THIS->object_data);
-  }
-}
-
-}
-
-/*!  @endclass
-*/
 
 /*! @class MSetIterator
 */

@@ -2,8 +2,13 @@ Version 1.2
 
 - Compiles properly against Xapian 1.0.x
 - Added _sprintf() methods to all classes
-- Added pike iterator interface for ESets and MSets
-- Removed most of the C++ style iterator interface for ESets and MSets
+- Added PositionIterator
+- Added TermIterator->position_iterator()
+- Added Document->value_iterator() and Document->term_iterator()
+- Added pike iterator interface for ESets, MSets ValueIterators, 
+    PositionITerators and TermIterators
+- Removed most of the C++ style iterator interface for ESets, MSets, 
+    ValueIterators and TermIterators
 - Added some flags from QueryParser
 
 Version 1.1

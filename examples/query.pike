@@ -8,6 +8,7 @@ int main(int argc, array argv)
   object s = Stem("english");
   object q = QueryParser();
   q->set_stemmer(s);
+  q->set_stemming_strategy(Public.Xapian.QueryParser.STEM_SOME);
   object query;
   array terms = argv[2..];
   query = q->parse_query(terms*" ", 0);

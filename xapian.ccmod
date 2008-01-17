@@ -3729,6 +3729,37 @@ PIKEFUN void set_default_op(int op)
   pop_n_elems(args);
 }
 
+
+/*! @decl void set_stemming_strategy(int strat)
+ *! Set the stemming strategy.
+ *!
+ *! This controls how the query parser will apply the stemming algorithm. 
+ *! The default value is STEM_NONE. The possible values are:
+ *! 
+ *!   * STEM_NONE: Don't perform any stemming.
+ *!
+ *!   * STEM_SOME: Search for stemmed forms of terms except for those 
+ *!  which start with a capital letter, or are followed by certain 
+ *! characters (currently: (/@<>=*[{" ), or are used with operators which 
+ *! need positional information. Stemmed terms are prefixed with 'Z'.
+ *!
+ *!   * STEM_ALL: Search for stemmed forms of all words (note: no 'Z' 
+ *! prefix is added).
+ *!
+ *! Note that the stemming algorithm is only applied to words in 
+ *! probabilistic fields - boolean filter terms are never stemmed.
+ *! 
+ */
+PIKEFUN void set_stemming_strategy(int strat)
+{
+  QueryParser * parser;
+
+  parser = THIS->object_data->parser;
+
+  parser->set_stemming_strategy((Xapian::QueryParser::stem_strategy)strat);
+  pop_n_elems(args);
+}
+
 /*  QueryParser.object parse_query(string query, int flags) */
 /*! @decl object parse_query(string query, int flags)
  *!
@@ -3874,6 +3905,7 @@ EXIT
 EXTRA
 {
   QueryParser::feature_flag flag;
+  int sflag;
 
   flag = QueryParser::FLAG_BOOLEAN;
   add_integer_constant("FLAG_BOOLEAN", flag, 0);
@@ -3888,7 +3920,6 @@ EXTRA
   flag = QueryParser::FLAG_SPELLING_CORRECTION;
   add_integer_constant("FLAG_SPELLING_CORRECTION", flag, 0);
 
-/*
   flag = QueryParser::FLAG_PURE_NOT;
   add_integer_constant("FLAG_PURE_NOT", flag, 0);
   flag = QueryParser::FLAG_PARTIAL;
@@ -3897,9 +3928,18 @@ EXTRA
   add_integer_constant("FLAG_SYNONYM", flag, 0);
   flag = QueryParser::FLAG_AUTO_SYNONYMS;
   add_integer_constant("FLAG_AUTO_SYNONYMS", flag, 0);
+
+/*
   flag = QueryParser::FLAG_MULTIWORD_SYNONYMS;
   add_integer_constant("FLAG_MULTIWORD_SYNONYMS", flag, 0);
 */
+
+  sflag = QueryParser::STEM_NONE;
+  add_integer_constant("STEM_NONE", sflag, 0);
+  sflag = QueryParser::STEM_SOME;
+  add_integer_constant("STEM_SOME", sflag, 0);
+  sflag = QueryParser::STEM_ALL;
+  add_integer_constant("STEM_ALL", sflag, 0);
 }
 
 }

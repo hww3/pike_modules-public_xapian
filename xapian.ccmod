@@ -39,6 +39,7 @@ using namespace std;
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
 #define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
 #define OBJ2_QUERY(o) ((struct Query_struct *)get_storage(o, Query_program))
+#define OBJ2_VALUERANGEPROCESSOR(o) ((struct ValueRangeProcessor_struct *)get_storage(o, ValueRangeProcessor_program))
 
 
 extern "C" struct program * Document_program;
@@ -48,6 +49,7 @@ extern "C" struct program * TermIterator_program;
 extern "C" struct program * PositionIterator_program;
 extern "C" struct program * MSet_program;
 extern "C" struct program * Stem_program;
+extern "C" struct program * ValueRangeProcessor_program;
 extern "C" typedef struct
 {
     Database *database;
@@ -128,9 +130,68 @@ extern "C" typedef struct
     Document *document;
 } XAPIAN_DOCUMENT_OBJECT_DATA;
 
+extern "C" typedef struct
+{
+    ValueRangeProcessor *processor;
+} XAPIAN_VALUERANGEPROCESSOR_OBJECT_DATA;
+
+/*! @decl string sortable_serialise(float value)
+ *! 
+ *! Convert a floating point number to a string, preserving sort order.  
+ */
+PIKEFUN string sortable_serialise(float value)
+{
+  string str = sortable_serialise(value);
+  pop_stack();
+  push_text(str.c_str());  
+}
+
+/*! @decl float sortable_unserialise(string value)
+ *!
+ *! Convert a string encoded using sortable_serialise back to a floating 
+ *! point number. 
+ */
+PIKEFUN float sortable_unserialise(string value)
+{
+   double f;
+   string str((const char *)value->str, (size_t)value->len);
+   f = sortable_unserialise(str);
+   push_float(f);
+}
+
+/*! @decl int minor_version()
+ */
+PIKEFUN int minor_version()
+{
+  push_int(minor_version());
+}
+
+/*! @decl int major_version()
+ */
+PIKEFUN int major_version()
+{
+  push_int(major_version());
+}
+
+/*! @decl int revision()
+ */
+PIKEFUN int revision()
+{
+  push_int(revision());
+}
+
+
+/*! @decl string version_string()
+ *! Report the version string of the library which the program is linked 
+ *! with. 
+ */
+PIKEFUN string version_string()
+{
+   push_text(version_string());
+}
+
 /*! @class Weight
 */
-
 PIKECLASS Weight
 {
 CVAR XAPIAN_WEIGHT_OBJECT_DATA   *object_data;
@@ -418,6 +479,202 @@ PIKECLASS TradWeight
 /*!  @endclass
 */
 
+/*! @class ValueRangeProcessor
+ *! Base class for value range processors. 
+*/
+
+PIKECLASS ValueRangeProcessor
+{
+CVAR XAPIAN_VALUERANGEPROCESSOR_OBJECT_DATA   *object_data;
+
+/*! @decl int `()(string begin, string end)
+ *!
+ *!  	Is term a stop-word?   
+ *! @returns
+ *!  1 if true, 0 otherwise.
+ *!
+ */
+PIKEFUN int `()(string begin, string end)
+{
+  ValueRangeProcessor * vrp;
+  bool i;
+  vrp = THIS->object_data->processor;
+  string str1((const char *)begin->str, (size_t)begin->len);
+  string str2((const char *)end->str, (size_t)end->len);
+
+  i = (*vrp)(str1, str2);  
+
+  push_int(i?1:0);
+}
+
+INIT
+{
+    XAPIAN_VALUERANGEPROCESSOR_OBJECT_DATA * dta = 
+	(XAPIAN_VALUERANGEPROCESSOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_VALUERANGEPROCESSOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->processor = NULL;
+    THIS->object_data = dta;
+}
+
+/*! @decl void destroy()
+ *!
+ *!  
+ *!
+ */
+PIKEFUN void destroy()
+{
+    ValueRangeProcessor  *vrp;
+    vrp = THIS->object_data->processor;
+
+    if(vrp) 
+    {
+     delete vrp;
+    }
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+
+    ValueRangeProcessor  *vrp;
+    vrp = THIS->object_data->processor;
+ //   printf("shutting down!\n");
+    free(THIS->object_data);
+  }
+}
+
+}
+/*!  @endclass
+*/
+
+
+/*! @class StringValueRangeProcessor
+ *! @inherit ValueRangeProcessor
+ *!
+ *! Handle a string range.
+ *!
+ *! The end points can be any strings. 
+ */
+
+PIKECLASS StringValueRangeProcessor
+{
+  INHERIT ValueRangeProcessor;
+
+  PIKEFUN void create(int valueno)
+  {
+    StringValueRangeProcessor * vrp = new StringValueRangeProcessor(valueno);
+
+    THIS_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
+    pop_n_elems(args);
+  }
+
+}
+/*!  @endclass
+*/
+
+
+/*! @class NumberValueRangeProcessor
+ *! @inherit ValueRangeProcessor
+ *!
+ *! Handle a number range.
+ *!
+ *! This class must be used on values which have been encoded using 
+ *! @[Public.Xapian.sortable_serialise]() which turns numbers into strings 
+ *! which will sort in the same order as the numbers (the same values can 
+ *! be used to implement a numeric sort).
+ *!
+ */
+
+PIKECLASS NumberValueRangeProcessor
+{
+  INHERIT ValueRangeProcessor;
+
+  PIKEFUN void create(int valueno)
+  {
+    NumberValueRangeProcessor * vrp = new NumberValueRangeProcessor(valueno);
+
+    THIS_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
+    pop_n_elems(args);
+  }
+
+/*! @decl void create(int valueno, string _str, int[0..1] is_prefix)
+ *! The string supplied in str_ is used by operator() to decide whether 
+ *! the pair of strings supplied to it constitute a valid range. If 
+ *! prefix_ is true, the first value in a range must begin with str_ (and 
+ *! the second value may optionally begin with str_); if prefix_ is 
+ *! false, the second value in a range must end with str_ (and the first 
+ *! value may optionally end with str_).
+ *! 
+ *! If str_ is empty, the setting of prefix_ is irrelevant, and no special 
+ *! strings are required at the start or end of the strings defining the 
+ *! range.
+ *! 
+ *! The remainder of both strings defining the endpoints must be valid 
+ *! floating point numbers. (FIXME: define format recognised).
+ *! 
+ *! For example, if str_ is "$" and prefix_ is true, and the range 
+ *! processor has been added to the queryparser, the queryparser will 
+ *! accept "$10..50" or "$10..50", but not "10..50" or "10..$50" as valid 
+ *! ranges. If str_ is 
+ *! "kg" and prefix_ is false, the queryparser will accept "10..50kg" or 
+ *! "10kg..50kg", but not "10..50" or "10kg..50" as valid ranges. 
+ */
+  PIKEFUN void create(int valueno, string _str, int is_prefix)
+  {
+    NumberValueRangeProcessor * vrp;
+    string str((const char *)_str->str, (size_t)_str->len);
+
+    vrp = new NumberValueRangeProcessor(valueno, str, is_prefix);
+
+    THIS_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
+    pop_n_elems(args);
+  }
+
+}
+/*!  @endclass
+*/
+
+/*! @class NumberValueRangeProcessor
+ *! @inherit ValueRangeProcessor
+ *!
+ *! Handle a number range.
+ *!
+ *! This class must be used on values which have been encoded using 
+ *! @[Public.Xapian.sortable_serialise]() which turns numbers into strings 
+ *! which will sort in the same order as the numbers (the same values can 
+ *! be used to implement a numeric sort).
+ *!
+ */
+
+PIKECLASS DateValueRangeProcessor
+{
+  INHERIT ValueRangeProcessor;
+
+/*! @decl void create(int valueno, int[0..1] prefer_mdy, int epoch_year)
+ *! @param valueno
+ *!    The value number to return from `()().
+ *! @param prefer_mdy
+ *!    Should ambiguous dates be interpreted as month/day/year rather than 
+ *!    day/month/year?
+ *! @param epoch_year
+ *!    Year to use as the epoch for dates with 2 digit years (default: 
+ *!    1970, so 1/1/69 is 2069 while 1/1/70 is 1970).
+ */
+  PIKEFUN void create(int valueno, int prefer_mdy, int epoch_year)
+  {
+    DateValueRangeProcessor * vrp = new DateValueRangeProcessor(valueno, prefer_mdy, epoch_year);
+
+    THIS_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
+    pop_n_elems(args);
+  }
+
+}
+/*!  @endclass
+*/
+
 /*! @class Stopper
  *! Base class for stop-word decision functor. 
 */
@@ -426,7 +683,6 @@ PIKECLASS Stopper
 {
 CVAR XAPIAN_STOPPER_OBJECT_DATA   *object_data;
 
-/*  Stopper.int `()(string word) */
 /*! @decl int `()(string word)
  *!
  *!  	Is term a stop-word?   
@@ -4949,10 +5205,17 @@ EXIT
 }
 EXTRA
 {
+/*! @decl constant DB_CREATE_OR_OPEN 
+ *! @decl constant DB_CREATE
+ *! @decl constant DB_CREATE_OR_OVERWRITE
+ *! @decl constant DB_OPEN
+ *! @decl constant BAD_VALUENO
+ */
 add_integer_constant("DB_CREATE_OR_OPEN", DB_CREATE_OR_OPEN, 0);
 add_integer_constant("DB_CREATE", DB_CREATE, 0);
 add_integer_constant("DB_CREATE_OR_OVERWRITE", DB_CREATE_OR_OVERWRITE, 0);
 add_integer_constant("DB_OPEN", DB_OPEN, 0);
+add_integer_constant("BAD_VALUENO", BAD_VALUENO, 0);
 }
 
 /*!  @endclass
@@ -4963,5 +5226,6 @@ add_integer_constant("DB_OPEN", DB_OPEN, 0);
 
 /*! @endmodule
  */
+
 
 

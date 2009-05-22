@@ -1,3 +1,6 @@
+- Added QueryParser->get_corrected_query_string() and
+    ->set_database()
+
 Version 1.3
 
 - Added QueryParser->set_stemming_strategy() and some constants

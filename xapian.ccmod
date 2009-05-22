@@ -3648,305 +3648,6 @@ PIKEFUN string _sprintf(int conversion_type, mapping params)
 /*!  @endclass
 */
 
-/*! @class QueryParser
-*/
-
-PIKECLASS QueryParser
-{
-CVAR XAPIAN_QUERYPARSER_OBJECT_DATA   *object_data;
-
-/*  QueryParser.void create() */
-/*! @decl void create()
- *!
- *!  
- *!
- */
-PIKEFUN void create()
-{
-  QueryParser * parser = new QueryParser();
-
-  THIS->object_data->parser = parser;
-}
-
-/*  QueryParser.void set_stemmer(object stemmer) */
-/*! @decl void set_stemmer(object stemmer)
- *!
- *!  
- *! @param stemmer
- *!  
-* !
- *!
- */
-PIKEFUN void set_stemmer(object stemmer)
-{
-  QueryParser * parser;
-  Stem * s;
-
-  parser = THIS->object_data->parser;
-  s = OBJ2_STEM(stemmer)->object_data->stem; 
-  parser->set_stemmer((const Stem)*s);
-
-  pop_n_elems(args);
-}
-
-/*  QueryParser.void set_stopper(object stopper) */
-/*! @decl void set_stopper(object stopper)
- *!
- *!  
- *! @param stopper
- *!  
-* !
- *!
- */
-PIKEFUN void set_stopper(object stopper)
-{
-  QueryParser * parser;
-  Stopper * s;
-
-  parser = THIS->object_data->parser;
-  s = OBJ2_STOPPER(stopper)->object_data->stopper; 
-  parser->set_stopper((const Stopper*)s);
-
-  pop_n_elems(args);
-}
-
-/*  QueryParser.void set_default_op(int op) */
-/*! @decl void set_default_op(int op)
- *!
- *!  
- *! @param op
- *!  
-* !
- *!
- */
-PIKEFUN void set_default_op(int op)
-{
-  QueryParser * parser;
-
-  parser = THIS->object_data->parser;
-
-  parser->set_default_op((Query::op)op);
-  pop_n_elems(args);
-}
-
-
-/*! @decl void set_stemming_strategy(int strat)
- *! Set the stemming strategy.
- *!
- *! This controls how the query parser will apply the stemming algorithm. 
- *! The default value is STEM_NONE. The possible values are:
- *! 
- *!   * STEM_NONE: Don't perform any stemming.
- *!
- *!   * STEM_SOME: Search for stemmed forms of terms except for those 
- *!  which start with a capital letter, or are followed by certain 
- *! characters (currently: (/@<>=*[{" ), or are used with operators which 
- *! need positional information. Stemmed terms are prefixed with 'Z'.
- *!
- *!   * STEM_ALL: Search for stemmed forms of all words (note: no 'Z' 
- *! prefix is added).
- *!
- *! Note that the stemming algorithm is only applied to words in 
- *! probabilistic fields - boolean filter terms are never stemmed.
- *! 
- */
-PIKEFUN void set_stemming_strategy(int strat)
-{
-  QueryParser * parser;
-
-  parser = THIS->object_data->parser;
-
-  parser->set_stemming_strategy((Xapian::QueryParser::stem_strategy)strat);
-  pop_n_elems(args);
-}
-
-/*  QueryParser.object parse_query(string query, int flags) */
-/*! @decl object parse_query(string query, int flags)
- *!
- *!  
- *! @param query
- *!  
-* !
- *! @param flags
- *!  
-* !
- *! @returns
- *!  
- *!
- */
-PIKEFUN object parse_query(string query, int flags)
-{
-  Query q;
-  Query * q1;
-  QueryParser *parser;
-  struct object *o;
-  parser = THIS->object_data->parser;
-
-  string str((const char *)query->str, (size_t)query->len);
-
-  q = parser->parse_query(str, flags);
-
-  q1 = new Query(q);  
-
-  o = fast_clone_object(Query_program);
-  if(!o) Pike_error("unable to clone the query program.\n");
-  if(!q1) Pike_error("unable to parse the query.\n");
-  OBJ2_QUERY(o)->object_data->query = q1;
-  pop_n_elems(args);
-  push_object(o);
-}
-
-/*  QueryParser.void add_prefix(string field, string prefix) */
-/*! @decl void add_prefix(string field, string prefix)
- *!
- *!  
- *! @param field
- *!  
-* !
- *! @param prefix
- *!  
-* !
- *!
- */
-PIKEFUN void add_prefix(string field, string prefix)
-{
-  QueryParser *parser;
-  parser = THIS->object_data->parser;
-  
-  string f((const char *)field->str, (size_t)field->len);
-  string p((const char *)prefix->str, (size_t)prefix->len);
-
-  parser->add_prefix(f, p);
-  pop_n_elems(args);
-}
-
-/*  QueryParser.void add_boolean_prefix(string field, string prefix) */
-/*! @decl void add_boolean_prefix(string field, string prefix)
- *!
- *!  
- *! @param field
- *!  
-* !
- *! @param prefix
- *!  
-* !
- *!
- */
-PIKEFUN void add_boolean_prefix(string field, string prefix)
-{
-  QueryParser *parser;
-  parser = THIS->object_data->parser;
-  
-  string f((const char *)field->str, (size_t)field->len);
-  string p((const char *)prefix->str, (size_t)prefix->len);
-
-  parser->add_boolean_prefix(f, p);
-  pop_n_elems(args);
-}
-
-/*  QueryParser.string get_description() */
-/*! @decl string get_description()
- *!
- *!  
- *! @returns
- *!  
- *!
- */
-PIKEFUN string get_description()
-{
-  QueryParser *parser;
-  parser = THIS->object_data->parser;
-
-  string str = parser->get_description();
-
-  push_text(str.c_str());
-}
-
-PIKEFUN string _sprintf(int conversion_type, mapping params)
-{
-  QueryParser  *query;
-  if(THIS && THIS->object_data && conversion_type == 'O')
-  {
-    query = THIS->object_data->parser;
-
-    string str = query->get_description();
-    pop_n_elems(args);
-    push_text(str.c_str());
-  }
-  else
-  {
-    pop_n_elems(args);
-    push_int(0);
-  }
-}
-
-INIT
-{
-    XAPIAN_QUERYPARSER_OBJECT_DATA * dta = 
-	(XAPIAN_QUERYPARSER_OBJECT_DATA*)malloc(sizeof(XAPIAN_QUERYPARSER_OBJECT_DATA));
-    if (!dta)
-        Pike_error("init_sample: Out of memory!\n");
-
-    dta->parser = NULL;
-    THIS->object_data = dta;
-}
-
-EXIT 
-{
-  if(THIS->object_data)
-  {
-    QueryParser  *parser;
-    parser = THIS->object_data->parser;
-    if(parser) delete parser;
-    free(THIS->object_data);
-  }
-}
-
-EXTRA
-{
-  QueryParser::feature_flag flag;
-  int sflag;
-
-  flag = QueryParser::FLAG_BOOLEAN;
-  add_integer_constant("FLAG_BOOLEAN", flag, 0);
-  flag = QueryParser::FLAG_PHRASE;
-  add_integer_constant("FLAG_PHRASE", flag, 0);
-  flag = QueryParser::FLAG_LOVEHATE;
-  add_integer_constant("FLAG_LOVEHATE", flag, 0);
-  flag = QueryParser::FLAG_BOOLEAN_ANY_CASE;
-  add_integer_constant("FLAG_BOOLEAN_ANY_CASE", flag, 0);
-  flag = QueryParser::FLAG_WILDCARD;
-  add_integer_constant("FLAG_WILDCARD", flag, 0);
-  flag = QueryParser::FLAG_SPELLING_CORRECTION;
-  add_integer_constant("FLAG_SPELLING_CORRECTION", flag, 0);
-
-  flag = QueryParser::FLAG_PURE_NOT;
-  add_integer_constant("FLAG_PURE_NOT", flag, 0);
-  flag = QueryParser::FLAG_PARTIAL;
-  add_integer_constant("FLAG_PARTIAL", flag, 0);
-  flag = QueryParser::FLAG_SYNONYM;
-  add_integer_constant("FLAG_SYNONYM", flag, 0);
-  flag = QueryParser::FLAG_AUTO_SYNONYMS;
-  add_integer_constant("FLAG_AUTO_SYNONYMS", flag, 0);
-
-/*
-  flag = QueryParser::FLAG_MULTIWORD_SYNONYMS;
-  add_integer_constant("FLAG_MULTIWORD_SYNONYMS", flag, 0);
-*/
-
-  sflag = QueryParser::STEM_NONE;
-  add_integer_constant("STEM_NONE", sflag, 0);
-  sflag = QueryParser::STEM_SOME;
-  add_integer_constant("STEM_SOME", sflag, 0);
-  sflag = QueryParser::STEM_ALL;
-  add_integer_constant("STEM_ALL", sflag, 0);
-}
-
-}
-
-/*!  @endclass
-*/
-
 /*! @class Database
 */
 
@@ -4697,6 +4398,343 @@ PIKEFUN string _sprintf(int conversion_type, mapping params)
 
 /*!  @endclass
 */
+
+
+/*! @class QueryParser
+*/
+
+PIKECLASS QueryParser
+{
+CVAR XAPIAN_QUERYPARSER_OBJECT_DATA   *object_data;
+
+/*  QueryParser.void create() */
+/*! @decl void create()
+ *!
+ *!  
+ *!
+ */
+PIKEFUN void create()
+{
+  QueryParser * parser = new QueryParser();
+
+  THIS->object_data->parser = parser;
+}
+
+/*! @decl string get_corrected_query_string()
+ *!
+ */
+PIKEFUN string get_corrected_query_string()
+{
+  QueryParser * parser;
+
+  parser = THIS->object_data->parser;
+  string nstr = parser->get_corrected_query_string();
+
+  pop_n_elems(args);
+
+  push_text(nstr.c_str());
+}
+
+/*  QueryParser.void set_stemmer(object stemmer) */
+/*! @decl void set_stemmer(object stemmer)
+ *!
+ *!  
+ *! @param stemmer
+ *!  
+* !
+ *!
+ */
+PIKEFUN void set_stemmer(object stemmer)
+{
+  QueryParser * parser;
+  Stem * s;
+
+  parser = THIS->object_data->parser;
+  s = OBJ2_STEM(stemmer)->object_data->stem; 
+  parser->set_stemmer((const Stem)*s);
+
+  pop_n_elems(args);
+}
+
+/*  QueryParser.void set_stopper(object stopper) */
+/*! @decl void set_stopper(object stopper)
+ *!
+ *!  
+ *! @param stopper
+ *!  
+* !
+ *!
+ */
+PIKEFUN void set_stopper(object stopper)
+{
+  QueryParser * parser;
+  Stopper * s;
+
+  parser = THIS->object_data->parser;
+  s = OBJ2_STOPPER(stopper)->object_data->stopper; 
+  parser->set_stopper((const Stopper*)s);
+
+  pop_n_elems(args);
+}
+
+/*  QueryParser.void set_database(object database) */
+/*! @decl void set_database(object database)
+ *!
+ *!  
+ *! @param database
+ *!  
+ *!
+ *!
+ */
+PIKEFUN void set_database(object database)
+{
+  QueryParser * parser;
+  Database * d;
+
+  parser = THIS->object_data->parser;
+  d = OBJ2_DATABASE(database)->object_data->database; 
+  parser->set_database((const Database)*d);
+
+  pop_n_elems(args);
+}
+
+/*  QueryParser.void set_default_op(int op) */
+/*! @decl void set_default_op(int op)
+ *!
+ *!  
+ *! @param op
+ *!  
+* !
+ *!
+ */
+PIKEFUN void set_default_op(int op)
+{
+  QueryParser * parser;
+
+  parser = THIS->object_data->parser;
+
+  parser->set_default_op((Query::op)op);
+  pop_n_elems(args);
+}
+
+
+/*! @decl void set_stemming_strategy(int strat)
+ *! Set the stemming strategy.
+ *!
+ *! This controls how the query parser will apply the stemming algorithm. 
+ *! The default value is STEM_NONE. The possible values are:
+ *! 
+ *!   * STEM_NONE: Don't perform any stemming.
+ *!
+ *!   * STEM_SOME: Search for stemmed forms of terms except for those 
+ *!  which start with a capital letter, or are followed by certain 
+ *! characters (currently: (/@<>=*[{" ), or are used with operators which 
+ *! need positional information. Stemmed terms are prefixed with 'Z'.
+ *!
+ *!   * STEM_ALL: Search for stemmed forms of all words (note: no 'Z' 
+ *! prefix is added).
+ *!
+ *! Note that the stemming algorithm is only applied to words in 
+ *! probabilistic fields - boolean filter terms are never stemmed.
+ *! 
+ */
+PIKEFUN void set_stemming_strategy(int strat)
+{
+  QueryParser * parser;
+
+  parser = THIS->object_data->parser;
+
+  parser->set_stemming_strategy((Xapian::QueryParser::stem_strategy)strat);
+  pop_n_elems(args);
+}
+
+/*  QueryParser.object parse_query(string query, int flags) */
+/*! @decl object parse_query(string query, int flags)
+ *!
+ *!  
+ *! @param query
+ *!  
+* !
+ *! @param flags
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
+PIKEFUN object parse_query(string query, int flags)
+{
+  Query q;
+  Query * q1;
+  QueryParser *parser;
+  struct object *o;
+  parser = THIS->object_data->parser;
+
+  string str((const char *)query->str, (size_t)query->len);
+
+  q = parser->parse_query(str, flags);
+
+  q1 = new Query(q);  
+
+  o = fast_clone_object(Query_program);
+  if(!o) Pike_error("unable to clone the query program.\n");
+  if(!q1) Pike_error("unable to parse the query.\n");
+  OBJ2_QUERY(o)->object_data->query = q1;
+  pop_n_elems(args);
+  push_object(o);
+}
+
+/*  QueryParser.void add_prefix(string field, string prefix) */
+/*! @decl void add_prefix(string field, string prefix)
+ *!
+ *!  
+ *! @param field
+ *!  
+* !
+ *! @param prefix
+ *!  
+* !
+ *!
+ */
+PIKEFUN void add_prefix(string field, string prefix)
+{
+  QueryParser *parser;
+  parser = THIS->object_data->parser;
+  
+  string f((const char *)field->str, (size_t)field->len);
+  string p((const char *)prefix->str, (size_t)prefix->len);
+
+  parser->add_prefix(f, p);
+  pop_n_elems(args);
+}
+
+/*  QueryParser.void add_boolean_prefix(string field, string prefix) */
+/*! @decl void add_boolean_prefix(string field, string prefix)
+ *!
+ *!  
+ *! @param field
+ *!  
+* !
+ *! @param prefix
+ *!  
+* !
+ *!
+ */
+PIKEFUN void add_boolean_prefix(string field, string prefix)
+{
+  QueryParser *parser;
+  parser = THIS->object_data->parser;
+  
+  string f((const char *)field->str, (size_t)field->len);
+  string p((const char *)prefix->str, (size_t)prefix->len);
+
+  parser->add_boolean_prefix(f, p);
+  pop_n_elems(args);
+}
+
+/*  QueryParser.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+PIKEFUN string get_description()
+{
+  QueryParser *parser;
+  parser = THIS->object_data->parser;
+
+  string str = parser->get_description();
+
+  push_text(str.c_str());
+}
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  QueryParser  *query;
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    query = THIS->object_data->parser;
+
+    string str = query->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
+
+INIT
+{
+    XAPIAN_QUERYPARSER_OBJECT_DATA * dta = 
+	(XAPIAN_QUERYPARSER_OBJECT_DATA*)malloc(sizeof(XAPIAN_QUERYPARSER_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->parser = NULL;
+    THIS->object_data = dta;
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+    QueryParser  *parser;
+    parser = THIS->object_data->parser;
+    if(parser) delete parser;
+    free(THIS->object_data);
+  }
+}
+
+EXTRA
+{
+  QueryParser::feature_flag flag;
+  int sflag;
+
+  flag = QueryParser::FLAG_BOOLEAN;
+  add_integer_constant("FLAG_BOOLEAN", flag, 0);
+  flag = QueryParser::FLAG_PHRASE;
+  add_integer_constant("FLAG_PHRASE", flag, 0);
+  flag = QueryParser::FLAG_LOVEHATE;
+  add_integer_constant("FLAG_LOVEHATE", flag, 0);
+  flag = QueryParser::FLAG_BOOLEAN_ANY_CASE;
+  add_integer_constant("FLAG_BOOLEAN_ANY_CASE", flag, 0);
+  flag = QueryParser::FLAG_WILDCARD;
+  add_integer_constant("FLAG_WILDCARD", flag, 0);
+  flag = QueryParser::FLAG_SPELLING_CORRECTION;
+  add_integer_constant("FLAG_SPELLING_CORRECTION", flag, 0);
+
+  flag = QueryParser::FLAG_PURE_NOT;
+  add_integer_constant("FLAG_PURE_NOT", flag, 0);
+  flag = QueryParser::FLAG_PARTIAL;
+  add_integer_constant("FLAG_PARTIAL", flag, 0);
+  flag = QueryParser::FLAG_SYNONYM;
+  add_integer_constant("FLAG_SYNONYM", flag, 0);
+  flag = QueryParser::FLAG_AUTO_SYNONYMS;
+  add_integer_constant("FLAG_AUTO_SYNONYMS", flag, 0);
+
+/*
+  flag = QueryParser::FLAG_MULTIWORD_SYNONYMS;
+  add_integer_constant("FLAG_MULTIWORD_SYNONYMS", flag, 0);
+*/
+
+  sflag = QueryParser::STEM_NONE;
+  add_integer_constant("STEM_NONE", sflag, 0);
+  sflag = QueryParser::STEM_SOME;
+  add_integer_constant("STEM_SOME", sflag, 0);
+  sflag = QueryParser::STEM_ALL;
+  add_integer_constant("STEM_ALL", sflag, 0);
+}
+
+}
+
+/*!  @endclass
+*/
+
 
 /*! @class Enquire
 */

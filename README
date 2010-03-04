@@ -1,3 +1,7 @@
 This is an interface to the Xapian text indexing library. It allows you to
 create and search text indexes using boolean and probabilistic search 
 queries.
+
+Always compile this module using the c++ compiler you used to compile the 
+xapian library. code calling and mangling conventions are not always
+compatible between compilers (such as g++ and sunpro as a specific example).

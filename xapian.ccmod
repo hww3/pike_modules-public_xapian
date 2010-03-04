@@ -190,6 +190,7 @@ PIKEFUN string version_string()
    push_text(version_string());
 }
 
+
 /*! @class Weight
 */
 PIKECLASS Weight
@@ -2463,6 +2464,14 @@ EXIT
 
 /*!  @endclass
 */
+
+
+/*
+     here are some important helper classes that we'll include 
+     rather than compile separately.
+*/
+#include "PikeMatchDeciderProxy.cc"
+
 
 
 /*! @class MSetIterator
@@ -5006,13 +5015,16 @@ PIKEFUN object get_mset(int first, int maxitems, object rset, function mdecider)
   MSet * mset1;
   struct object * o;
   RSet * rseto;
+  PikeMatchDeciderProxy * md;
 
   rseto = OBJ2_RSET(rset)->object_data->rset;
+  
+  md = new PikeMatchDeciderProxy(mdecider);
 
   try
   {
     mset = enquire->get_mset((doccount)first, (doccount)maxitems, 
-            rseto, 0);
+            rseto, md);
 
   }
   catch(InvalidArgumentError &e)
@@ -5304,6 +5316,5 @@ add_integer_constant("BAD_VALUENO", BAD_VALUENO, 0);
 
 /*! @endmodule
  */
-
 
 

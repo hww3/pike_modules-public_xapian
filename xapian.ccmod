@@ -2471,6 +2471,7 @@ EXIT
      rather than compile separately.
 */
 #include "PikeMatchDeciderProxy.cc"
+#include "PikeExpandDeciderProxy.cc"
 
 
 
@@ -3822,14 +3823,14 @@ PIKEFUN object synonyms_iterator(string term)
 {
   Database  *db;
 
-  string str((const char *)term->str, (size_t)term->len);
-
   db = (Database*)THIS->object_data->database;
 
 
   TermIterator ti;
   TermIterator * ti2;
   struct object * o;
+
+  string str((const char *)term->str, (size_t)term->len);
 
   ti = db->synonyms_begin(str);
   ti2 = new TermIterator(ti);
@@ -3886,6 +3887,59 @@ PIKEFUN object get_document(int id)
   push_object(obj);
 
 }
+
+/*! @decl object get_spelling_terms()
+ *!
+ *! @returns
+ *!   a @[TermIterator] object which can also be passed to @[foreach]()
+ */
+PIKEFUN object get_spelling_terms()
+{
+  TermIterator ti;
+  TermIterator * ti2;
+  struct object * o;
+
+  Database  *db;
+  db = THIS->object_data->database;
+
+
+  ti = db->spellings_begin();
+  ti2 = new TermIterator(ti);
+
+  o = fast_clone_object(TermIterator_program);
+
+  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->spellings_end());
+
+  push_object(o);    
+}
+
+/*! @decl object get_synonym_terms(string)
+ *!
+ *! @returns
+ *!   a @[TermIterator] object which can also be passed to @[foreach]()
+ */
+PIKEFUN object get_spelling_terms(string term)
+{
+  TermIterator ti;
+  TermIterator * ti2;
+  struct object * o;
+
+  Database  *db;
+  db = THIS->object_data->database;
+
+
+  ti = db->synonyms_begin(term->str);
+  ti2 = new TermIterator(ti);
+
+  o = fast_clone_object(TermIterator_program);
+
+  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->synonyms_end(term->str));
+
+  push_object(o);    
+}
+
 
 /*! @decl string get_spelling_suggestion(string word, int max_edit_distance)
  *! Suggest a spelling correction.
@@ -4987,8 +5041,8 @@ PIKEFUN object get_query()
   push_object(r);
 }
 
-/*  Enquire.object get_mset(int first, int maxitems, object rset, function mdecider) */
-/*! @decl object get_mset(int first, int maxitems, object rset, function mdecider)
+/*  Enquire.object get_mset(int first, int maxitems, object rset, function|void mdecider) */
+/*! @decl object get_mset(int first, int maxitems, object rset, function|void mdecider)
  *!
  *!  
  *! @param first
@@ -5000,13 +5054,44 @@ PIKEFUN object get_query()
  *! @param rset
  *!  
 * !
- *! @param mdecider
- *!  
-* !
  *! @returns
  *!  
  *!
  */
+PIKEFUN object get_mset(int first, int maxitems, object rset)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+  MSet mset;
+  MSet * mset1;
+  struct object * o;
+  RSet * rseto;
+
+  rseto = OBJ2_RSET(rset)->object_data->rset;
+
+  try
+  {
+    mset = enquire->get_mset((doccount)first, (doccount)maxitems, 
+            rseto, 0);
+
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }  
+
+  pop_n_elems(args);
+
+  o = fast_clone_object(MSet_program);
+  mset1 = new MSet(mset);
+  OBJ2_MSET(o)->object_data->mset = mset1;
+
+  push_object(o);
+
+
+}
+
 PIKEFUN object get_mset(int first, int maxitems, object rset, function mdecider)
 {
   Enquire  *enquire;
@@ -5090,8 +5175,8 @@ PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
 }
 
 
-/*  Enquire.object get_eset(int maxitems, object rset, function edecider) */
-/*! @decl object get_eset(int maxitems, object rset, function edecider)
+/*  Enquire.object get_eset(int maxitems, object rset, function|void edecider) */
+/*! @decl object get_eset(int maxitems, object rset, function|void edecider)
  *!
  *!  
  *! @param maxitems
@@ -5107,7 +5192,7 @@ PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
  *!  
  *!
  */
-PIKEFUN object get_eset(int maxitems, object rset, function edecider)
+PIKEFUN object get_eset(int maxitems, object rset)
 {
   Enquire  *enquire;
   enquire = THIS->object_data->enquire;
@@ -5138,8 +5223,42 @@ PIKEFUN object get_eset(int maxitems, object rset, function edecider)
   push_object(o);
 }
 
-/*  Enquire.object get_eset(int maxitems, object rset, int flags, float k, function edecider) */
-/*! @decl object get_eset(int maxitems, object rset, int flags, float k, function edecider)
+PIKEFUN object get_eset(int maxitems, object rset, function edecider)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+  ESet eset;
+  ESet * eset1;
+  RSet * rseto;
+  struct object * o;
+  PikeExpandDeciderProxy * ed;
+
+  ed = new PikeExpandDeciderProxy(edecider);
+
+  rseto = OBJ2_RSET(rset)->object_data->rset;
+ 
+  try
+  {
+    eset = enquire->get_eset((termcount)maxitems, *rseto, ed);
+
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }  
+
+  pop_n_elems(args);
+
+  o = fast_clone_object(ESet_program);
+  eset1 = new ESet(eset);
+  OBJ2_ESET(o)->object_data->eset = eset1;
+
+  push_object(o);
+}
+
+/*  Enquire.object get_eset(int maxitems, object rset, int flags, float k, function|void edecider) */
+/*! @decl object get_eset(int maxitems, object rset, int flags, float k, function|void edecider)
  *!
  *!  
  *! @param maxitems
@@ -5169,6 +5288,40 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function 
   ESet * eset1;
   RSet * rseto;
   struct object * o;
+  PikeExpandDeciderProxy * ed;
+
+  ed = new PikeExpandDeciderProxy(edecider);
+
+  rseto = OBJ2_RSET(rset)->object_data->rset;
+ 
+  try
+  {
+    eset = enquire->get_eset((termcount)maxitems, *rseto, (int)flags, (double)k, ed);
+
+  }
+  catch(InvalidArgumentError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("InvalidArgumentError\n");
+  }  
+
+  pop_n_elems(args);
+
+  o = fast_clone_object(ESet_program);
+  eset1 = new ESet(eset);
+  OBJ2_ESET(o)->object_data->eset = eset1;
+
+  push_object(o);
+}
+
+PIKEFUN object get_eset(int maxitems, object rset, int flags, float k)
+{
+  Enquire  *enquire;
+  enquire = THIS->object_data->enquire;
+  ESet eset;
+  ESet * eset1;
+  RSet * rseto;
+  struct object * o;
 
   rseto = OBJ2_RSET(rset)->object_data->rset;
  
@@ -5191,6 +5344,7 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function 
 
   push_object(o);
 }
+
 /*! @decl object get_matching_terms(int docid)
  *!
  *! @returns

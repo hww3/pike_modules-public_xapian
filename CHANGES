@@ -1,5 +1,8 @@
 - Added QueryParser->get_corrected_query_string() and
     ->set_database()
+- Added support for MatchDecider and ExpandDecider functions for Enquire.get_eset()
+    and Enquire.get_mset()
+- Added Database.get_spelling_terms() and Database.get_synonym_terms()
 
 Version 1.3
 

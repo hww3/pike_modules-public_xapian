@@ -39,6 +39,7 @@ using namespace std;
 #define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
 #define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
 #define OBJ2_QUERY(o) ((struct Query_struct *)get_storage(o, Query_program))
+#define OBJ2_TERMGENERATOR(o) ((struct TermGenerator_struct *)get_storage(o, TermGenerator_program))
 #define OBJ2_VALUERANGEPROCESSOR(o) ((struct ValueRangeProcessor_struct *)get_storage(o, ValueRangeProcessor_program))
 
 
@@ -49,6 +50,7 @@ extern "C" struct program * TermIterator_program;
 extern "C" struct program * PositionIterator_program;
 extern "C" struct program * MSet_program;
 extern "C" struct program * Stem_program;
+extern "C" struct program * TermGenerator_program;
 extern "C" struct program * ValueRangeProcessor_program;
 extern "C" typedef struct
 {
@@ -64,6 +66,11 @@ extern "C" typedef struct
 {
     Weight *weight;
 } XAPIAN_WEIGHT_OBJECT_DATA;
+
+extern "C" typedef struct
+{
+    TermGenerator *termgenerator;
+} XAPIAN_TERMGENERATOR_OBJECT_DATA;
 
 extern "C" typedef struct
 {
@@ -189,7 +196,6 @@ PIKEFUN string version_string()
 {
    push_text(version_string());
 }
-
 
 /*! @class Weight
 */
@@ -5464,6 +5470,214 @@ add_integer_constant("BAD_VALUENO", BAD_VALUENO, 0);
 
 /*!  @endclass
  */
+
+
+/*! @class TermGenerator
+*/
+PIKECLASS TermGenerator
+{
+CVAR XAPIAN_TERMGENERATOR_OBJECT_DATA   *object_data;
+
+
+PIKEFUN int set_flags(int flags, int mask)
+{
+  TermGenerator * termgenerator;
+  termgenerator = (TermGenerator*)THIS->object_data->termgenerator;
+
+  TermGenerator::flags f;
+  TermGenerator::flags m;
+
+  f = (TermGenerator::flags)flags;
+  m = (TermGenerator::flags)mask;
+
+  termgenerator->set_flags(f, m);
+
+  pop_n_elems(args);
+}
+
+/*  TermGenerator.void set_document(object document) */
+/*! @decl void set_document(object document)
+ *!
+ *!  
+ *! @param document
+ *!  
+* !
+ *! @returns
+ *!  
+ *!
+ */
+PIKEFUN void set_document(object document)
+{
+  TermGenerator * termgenerator;
+  Document * doc;
+  docid id;
+
+  struct Document_struct * od;
+
+  termgenerator = (TermGenerator*)THIS->object_data->termgenerator;
+  od = OBJ2_DOCUMENT(document);
+
+  if(!od) Pike_error("Not a Document!\n");
+
+  doc = od->object_data->document;
+
+  try
+  {
+    termgenerator->set_document(*doc);
+  }
+  catch(Xapian::DatabaseCorruptError &e)
+  {
+    Pike_error("DatabaseCorruptError\n");
+  }
+  catch(Xapian::DatabaseError &e)
+  {
+    Pike_error("DatabaseError\n");
+  }
+  catch(Xapian::InvalidArgumentError &e)
+  {
+    //printf("%s\n",e.get_msg().c_str());
+    Pike_error("InvalidArgumentError\n");
+  }
+  pop_n_elems(args);
+}
+
+  PIKEFUN object get_document()
+  {
+    TermGenerator * termgenerator;
+    Document doc;
+    Document *doc2;
+    struct object * o;
+    try {
+    termgenerator = (TermGenerator*)THIS->object_data->termgenerator;
+    doc = termgenerator->get_document();    
+    doc2 = new Document(doc);
+
+    o = fast_clone_object(Document_program);
+    OBJ2_DOCUMENT(o)->object_data->document = doc2;
+
+    push_object(o);
+  }
+  catch(RangeError &e)
+  {
+    pop_n_elems(args);
+    Pike_error("RangeError\n");
+  }
+
+  }
+
+/*  TermGenerator.void set_stemmer(object stemmer) */
+/*! @decl void set_stemmer(object stemmer)
+ *!
+ *!  
+ *! @param stemmer
+ *!  
+* !
+ *!
+ */
+PIKEFUN void set_stemmer(object stemmer)
+{
+  TermGenerator * termgenerator;
+  Stem * s;
+
+  termgenerator = THIS->object_data->termgenerator;
+  s = OBJ2_STEM(stemmer)->object_data->stem; 
+  termgenerator->set_stemmer((const Stem)*s);
+
+  pop_n_elems(args);
+}
+
+/*  TermGenerator.void set_stopper(object stopper) */
+/*! @decl void set_stopper(object stopper)
+ *!
+ *!  
+ *! @param stopper
+ *!  
+* !
+ *!
+ */
+PIKEFUN void set_stopper(object stopper)
+{
+  TermGenerator * termgenerator;
+  Stopper * s;
+
+  termgenerator = THIS->object_data->termgenerator;
+  s = OBJ2_STOPPER(stopper)->object_data->stopper; 
+  termgenerator->set_stopper((const Stopper*)s);
+
+  pop_n_elems(args);
+}
+
+/*  TermGenerator.void set_database(object database) */
+/*! @decl void set_database(object database)
+ *!
+ *!  
+ *! @param database
+ *!  
+ *!
+ *!
+ */
+PIKEFUN void set_database(object database)
+{
+  TermGenerator * termgenerator;
+  Database * d;
+
+  termgenerator = THIS->object_data->termgenerator;
+  d = OBJ2_DATABASE(database)->object_data->database; 
+
+  termgenerator->set_database((const Xapian::WritableDatabase&)*d);
+
+  pop_n_elems(args);
+}
+
+
+
+INIT
+{
+    XAPIAN_TERMGENERATOR_OBJECT_DATA * dta = 
+	(XAPIAN_TERMGENERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_TERMGENERATOR_OBJECT_DATA));
+    if (!dta)
+        Pike_error("init_sample: Out of memory!\n");
+
+    dta->termgenerator = NULL;
+    THIS->object_data = dta;
+}
+
+/*  Weight.void destroy() */
+/*! @decl void destroy()
+ *!
+ *!  
+ *!
+ */
+PIKEFUN void destroy()
+{
+
+    TermGenerator * termgenerator;
+    termgenerator = THIS->object_data->termgenerator;
+
+    if(termgenerator) 
+    {
+     delete termgenerator;
+    }
+
+}
+
+EXIT 
+{
+  if(THIS->object_data)
+  {
+
+    TermGenerator  *termgenerator;
+    termgenerator = THIS->object_data->termgenerator;
+//    printf("shutting down!\n");
+    free(THIS->object_data);
+  }
+}
+
+}
+
+/*!  @endclass
+*/
+
 
 /*! @endmodule
  */

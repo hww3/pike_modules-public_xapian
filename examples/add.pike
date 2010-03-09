@@ -17,6 +17,8 @@ int main(int argc, array argv)
 
   d->add_value(0, argv[2]);
 
+  // adding terms to the database
+  // see http://xapian.org/docs/termgenerator.html
   foreach(terms; int i; string term)
   {
     term = lower_case(term);

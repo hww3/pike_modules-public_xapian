@@ -60,7 +60,7 @@ pmar:  verify
 	rm -rf ${MODULE_DIR_NAME}-1.${MIN}
 
 release: verify
-	svn copy -m "tagging project" http://wush.net/svn/hww3/trunk http://wush.net/svn/hww3/tags/Public_Xapian_RELEASE_1${MIN}
+	svn copy -m "tagging project" http://wush.net/svn/hww3/trunk http://wush.net/svn/hww3/tags/Public_Xapian_RELEASE_1_${MIN}
 #	${MAKE} pmar RELEASE=${MIN}
 	svn export http://wush.net/svn/hww3/tags/Public_Xapian_RELEASE_1_${MIN}/pike_modules/Public_Xapian Public_Xapian-1.${MIN}
 	cd Public_Xapian-1.${MIN} && \

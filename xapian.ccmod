@@ -894,7 +894,7 @@ PIKEFUN void create(string language)
     stem = new Stem(str);
   }
 
-  catch(InvalidArgumentError &e)
+  catch(const InvalidArgumentError &e)
   {
     pop_n_elems(args);
     Pike_error("InvalidArgumentError\n");
@@ -930,16 +930,24 @@ PIKEFUN void create()
  *! @returns
  *!   the word stem  
  *!
+ *! @note
+ *!   this function is wide-string aware.
+ *!
  */
 PIKEFUN string `()(string word)
 {
   Stem  *stem;
   string foo;
-  const string str((const char *)word->str, (size_t)word->len);
+
+  ref_push_string(word);
+  f_string_to_utf8(1);
+
+  const string str((const char *)Pike_sp[-1].u.string->str, (size_t) Pike_sp[-1].u.string->len);
+
   stem = THIS->object_data->stem;
 
   foo = (*stem)(str);
-  pop_n_elems(args);
+  pop_n_elems(args+1);
   push_text(foo.c_str());
 }
 
@@ -1447,7 +1455,7 @@ PIKECLASS PositionIterator
       pop_stack();
       push_int(0);
     }
-    catch(RangeError &e)
+    catch(const RangeError &e)
     {
       pop_n_elems(args);
       Pike_error("RangeError\n");
@@ -1473,7 +1481,7 @@ PIKECLASS PositionIterator
       i = (*(*posi));
       push_int(i);
     }
-    catch(RangeError &e)
+    catch(const RangeError &e)
     {
       pop_n_elems(args);
       Pike_error("RangeError\n");
@@ -1640,7 +1648,7 @@ PIKECLASS ValueIterator
       i = valuei->get_valueno();
       push_int((INT_TYPE)i);
     }
-    catch(RangeError &e)
+    catch(const RangeError &e)
     {
       pop_n_elems(args);
       Pike_error("RangeError\n");
@@ -1667,7 +1675,7 @@ PIKECLASS ValueIterator
       i = (*(*valuei));
       push_text(i.c_str());
     }
-    catch(RangeError &e)
+    catch(const RangeError &e)
     {
       pop_n_elems(args);
       Pike_error("RangeError\n");
@@ -2296,7 +2304,7 @@ PIKEFUN void add_posting(string tname, int termpos, int termcount)
     doc->add_posting(str, (unsigned int)termpos, (unsigned int)termcount);
   }
 
-  catch(InvalidArgumentError &e)
+  catch(const InvalidArgumentError &e)
   {
     pop_n_elems(args);
     Pike_error(e.get_msg().c_str());
@@ -2325,7 +2333,7 @@ PIKEFUN void remove_term(string tname)
   {
     doc->remove_term(str);
   }
-  catch(InvalidArgumentError &e)
+  catch(const InvalidArgumentError &e)
   {
     pop_n_elems(args);
     Pike_error("InvalidArgumentError\n");
@@ -2365,7 +2373,7 @@ PIKEFUN void remove_posting(string tname, int tpos, int wdfdec)
   {
     doc->remove_posting(str, tpos, wdfdec);
   }
-  catch(InvalidArgumentError &e)
+  catch(const InvalidArgumentError &e)
   {
     pop_n_elems(args);
     Pike_error("InvalidArgumentError\n");
@@ -2506,7 +2514,7 @@ PIKECLASS MSetIterator
 
     push_object(o);
   }
-  catch(RangeError &e)
+  catch(const RangeError &e)
   {
     pop_n_elems(args);
     Pike_error("RangeError\n");
@@ -3683,10 +3691,31 @@ CVAR XAPIAN_DATABASE_OBJECT_DATA   *object_data;
 PIKEFUN void create(string path)
 {
   string str((const char *)path->str, (size_t)path->len);
-  Database * db = new Database(str);
-  THIS->object_data->database = db;
-
+  try
+  {
+   Database * db = new Database(str);
+   THIS->object_data->database = db;
+   pop_n_elems(args);
+  }
+  catch(const DatabaseLockError& e)
+  {
   pop_n_elems(args);  
+    Pike_error("DatabaseLockError\n");
+  }
+  catch(const DatabaseOpeningError& e) 
+  {
+  pop_n_elems(args);  
+    Pike_error("DatabaseOpeningError\n");
+  }
+  catch(const InvalidArgumentError& e) 
+  {
+  pop_n_elems(args);  
+    Pike_error("InvalidArgumentError\n");
+  }
+  catch(...){
+  pop_n_elems(args);  
+    Pike_error("an error occurred while opening the database.\n");
+  }
 }
 
 /*  Database.void create() */
@@ -3876,7 +3905,7 @@ PIKEFUN object get_document(int id)
     doc = db->get_document((docid)id);
   }
 
-  catch(DocNotFoundError &e)
+  catch(const DocNotFoundError &e)
   {
     pop_n_elems(args);
     Pike_error("DocumentNotFoundError\n");
@@ -4084,17 +4113,24 @@ PIKEFUN void create(string path, int mode)
     THIS->object_data->database = database;
   }
 
-  catch(DatabaseLockError &e)
+  catch(const DatabaseLockError& e)
   {
+    pop_n_elems(args);
     Pike_error("DatabaseLockError\n");
   }
-  catch(DatabaseOpeningError &e) 
+  catch(const DatabaseOpeningError &e) 
   {
+    pop_n_elems(args);
     Pike_error("DatabaseOpeningError\n");
   }
-  catch(InvalidArgumentError &e) 
+  catch(const InvalidArgumentError &e) 
   {
+    pop_n_elems(args);
     Pike_error("InvalidArgumentError\n");
+  }
+  catch(...){
+    pop_n_elems(args);
+    Pike_error("an error occurred while opening the database.\n");
   }
 }
 
@@ -4622,14 +4658,16 @@ PIKEFUN void set_stemming_strategy(int strat)
  *!
  *!  
  *! @param query
- *!  
+ *!   a plain text query string
 * !
  *! @param flags
  *!  
 * !
  *! @returns
- *!  
+ *!   a @[Query] object
  *!
+ *! @note
+ *!   this function is wide-string aware
  */
 PIKEFUN object parse_query(string query, int flags)
 {
@@ -4639,7 +4677,10 @@ PIKEFUN object parse_query(string query, int flags)
   struct object *o;
   parser = THIS->object_data->parser;
 
-  string str((const char *)query->str, (size_t)query->len);
+  ref_push_string(query);
+  f_string_to_utf8(1);
+
+  string str((const char *)Pike_sp[-1].u.string->str, (size_t) Pike_sp[-1].u.string->len);
 
   q = parser->parse_query(str, flags);
 
@@ -4649,7 +4690,7 @@ PIKEFUN object parse_query(string query, int flags)
   if(!o) Pike_error("unable to clone the query program.\n");
   if(!q1) Pike_error("unable to parse the query.\n");
   OBJ2_QUERY(o)->object_data->query = q1;
-  pop_n_elems(args);
+  pop_n_elems(args+1);
   push_object(o);
 }
 
@@ -5673,10 +5714,15 @@ PIKEFUN int get_termpos()
   push_int((int)termpos);
 }
 
+/*!
+ *!  @decl void index_text(string text, int weight, string prefix)
+ *!
+ *! @note
+ *!   this function is wide-string aware.
+*/
 PIKEFUN void index_text(string text, int weight, string prefix)
 {
   TermGenerator * termgenerator;
-
 
   ref_push_string(text);
   f_string_to_utf8(1);
@@ -5687,6 +5733,29 @@ PIKEFUN void index_text(string text, int weight, string prefix)
   termgenerator = THIS->object_data->termgenerator;
 
   termgenerator->index_text(*text_iter, (Xapian::termcount) weight, prefix_str);
+
+  pop_n_elems(args+1);
+}
+
+/*!
+ *!  @decl void index_text_without_positions(string text, int weight, string prefix)
+ *!
+ *! @note
+ *!   this function is wide-string aware.
+*/
+PIKEFUN void index_text_without_positions(string text, int weight, string prefix)
+{
+  TermGenerator * termgenerator;
+
+  ref_push_string(text);
+  f_string_to_utf8(1);
+
+  Xapian::Utf8Iterator * text_iter = new Xapian::Utf8Iterator((const char *)Pike_sp[-1].u.string->str, (size_t) Pike_sp[-1].u.string->len);
+  string prefix_str((const char *)prefix->str, (size_t)prefix->len);
+
+  termgenerator = THIS->object_data->termgenerator;
+
+  termgenerator->index_text_without_positions(*text_iter, (Xapian::termcount) weight, prefix_str);
 
   pop_n_elems(args+1);
 }

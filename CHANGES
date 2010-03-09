@@ -1,9 +1,14 @@
+Version 1.4 
+
+- TermGenerator.index_text*, Stem.`() and QueryParser.parse_query() are now
+    wide-string aware.
 - Added TermGenerator class
 - Added QueryParser->get_corrected_query_string() and
     ->set_database()
 - Added support for MatchDecider and ExpandDecider functions for Enquire.get_eset()
     and Enquire.get_mset()
 - Added Database.get_spelling_terms() and Database.get_synonym_terms()
+- Updated examples to support TermGenerator and spelling correction
 
 Version 1.3
 

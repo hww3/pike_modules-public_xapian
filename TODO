@@ -1,20 +1,23 @@
 We need to consider the implications of wide-strings passed to things like 
 stoppers and such. Do we need to convert them to UTF8?
 
+Need to implement functions:
+
+spelling and synonym modification methods in WriteableDatabase.
+
 Pike Glue Classes we need to write:
 
-Xapian::DateValueRangeProcessor	Handle a date range
-Xapian::ErrorHandler	Decide if a Xapian::Error exception should be ignored
-Xapian::ExpandDecider	Virtual base class for expand decider functor
 Xapian::ExpandDeciderAnd	ExpandDecider subclass which rejects terms using two ExpandDeciders
+	(note: a direct implementation is not strictly necessary, as you could just pass a function 
+          that handled this.)
 Xapian::ExpandDeciderFilterTerms	ExpandDecider subclass which rejects terms in a specified list
-Xapian::MatchDecider	Base class for matcher decision functor
+	(note: a direct implementation is not strictly necessary, as you could just pass a function 
+          that handled this.)
+
+Xapian::ErrorHandler	Decide if a Xapian::Error exception should be ignored
 Xapian::MatchSpy	Class for classifying matching documents by their values
-Xapian::v102::NumberValueRangeProcessor	Handle a number range
 Xapian::PositionIterator	An iterator pointing to items in a list of positions
 Xapian::PostingIterator	An iterator pointing to items in a list of postings
-Xapian::StringValueRangeProcessor	Handle a string range
-Xapian::TermGenerator	Parses a piece of text and generate terms
 Xapian::ValueRangeProcessor	Base class for value range processors
 
 
@@ -23,4 +26,4 @@ C++ Classes we need to write:
 Pike-based stopper bridge.
 Pike-based stemmer bridge.
 
-Class for functor pass-thru.
+Exception handling needs to be improved.

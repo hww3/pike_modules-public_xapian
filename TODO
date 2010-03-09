@@ -1,5 +1,6 @@
 We need to consider the implications of wide-strings passed to things like 
-stoppers and such. Do we need to convert them to UTF8?
+stoppers and such. Do we need to convert them to UTF8? This is already done for 
+a few methods, and the docs mark these as wide-string aware.
 
 Need to implement functions:
 

@@ -1,5 +1,5 @@
 import Public.Xapian;
-
+//import module;
 
 int main(int argc, array argv)
 {
@@ -7,12 +7,19 @@ int main(int argc, array argv)
   object e = Enquire(database);
   object s = Stem("english");
   object q = QueryParser();
+
   q->set_stemmer(s);
   q->set_stemming_strategy(Public.Xapian.QueryParser.STEM_SOME);
+  q->set_database(database);
   object query;
   array terms = argv[2..];
-  query = q->parse_query(terms*" ", 0);
+  query = q->parse_query(terms*" ", QueryParser.FLAG_SPELLING_CORRECTION);
+
 werror("Query: %O\n", query);
+string cqs = q->get_corrected_query_string();
+if(sizeof(cqs))
+  werror("did you mean: %O?\n", cqs);
+
   e->set_query(query, 0);
   object mset = e->get_mset(0, 100, 10);
 

@@ -1,3 +1,4 @@
+- Added TermGenerator class
 - Added QueryParser->get_corrected_query_string() and
     ->set_database()
 - Added support for MatchDecider and ExpandDecider functions for Enquire.get_eset()

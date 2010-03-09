@@ -5478,6 +5478,14 @@ PIKECLASS TermGenerator
 {
 CVAR XAPIAN_TERMGENERATOR_OBJECT_DATA   *object_data;
 
+  PIKEFUN void create()
+  {
+    TermGenerator * termgenerator;
+    termgenerator = new TermGenerator();
+
+    THIS->object_data->termgenerator = termgenerator;
+  }
+
 
 PIKEFUN int set_flags(int flags, int mask)
 {
@@ -5510,11 +5518,10 @@ PIKEFUN void set_document(object document)
 {
   TermGenerator * termgenerator;
   Document * doc;
-  docid id;
-
   struct Document_struct * od;
 
   termgenerator = (TermGenerator*)THIS->object_data->termgenerator;
+
   od = OBJ2_DOCUMENT(document);
 
   if(!od) Pike_error("Not a Document!\n");
@@ -5540,7 +5547,11 @@ PIKEFUN void set_document(object document)
   }
   pop_n_elems(args);
 }
-
+/*!
+*!
+*!  @decl object get_document()
+*!
+*/
   PIKEFUN object get_document()
   {
     TermGenerator * termgenerator;
@@ -5630,6 +5641,94 @@ PIKEFUN void set_database(object database)
 }
 
 
+/*!
+ *! @decl void set_termpos(int termpos)
+ *!
+ */
+PIKEFUN void set_termpos(int termpos)
+{
+  TermGenerator * termgenerator;
+
+  termgenerator = THIS->object_data->termgenerator;
+
+  termgenerator->set_termpos((Xapian::termcount)termpos);
+
+  pop_n_elems(args);
+}
+
+/*!
+ *! @decl int get_termpos()
+ *!
+ */
+PIKEFUN int get_termpos()
+{
+  TermGenerator * termgenerator;
+
+  termgenerator = THIS->object_data->termgenerator;
+
+  Xapian::termcount termpos;
+
+  termpos = termgenerator->get_termpos();
+
+  push_int((int)termpos);
+}
+
+PIKEFUN void index_text(string text, int weight, string prefix)
+{
+  TermGenerator * termgenerator;
+
+
+  ref_push_string(text);
+  f_string_to_utf8(1);
+
+  Xapian::Utf8Iterator * text_iter = new Xapian::Utf8Iterator((const char *)Pike_sp[-1].u.string->str, (size_t) Pike_sp[-1].u.string->len);
+  string prefix_str((const char *)prefix->str, (size_t)prefix->len);
+
+  termgenerator = THIS->object_data->termgenerator;
+
+  termgenerator->index_text(*text_iter, (Xapian::termcount) weight, prefix_str);
+
+  pop_n_elems(args+1);
+}
+
+
+/*  Stopper.string get_description() */
+/*! @decl string get_description()
+ *!
+ *!  
+ *! @returns
+ *!  
+ *!
+ */
+PIKEFUN string get_description()
+{
+  TermGenerator * termgenerator;
+  termgenerator = THIS->object_data->termgenerator;
+
+  string str = termgenerator->get_description();
+
+  push_text(str.c_str());
+}
+
+PIKEFUN string _sprintf(int conversion_type, mapping params)
+{
+  TermGenerator * termgenerator;
+
+
+  if(THIS && THIS->object_data && conversion_type == 'O')
+  {
+    termgenerator = THIS->object_data->termgenerator;
+
+    string str = termgenerator->get_description();
+    pop_n_elems(args);
+    push_text(str.c_str());
+  }
+  else
+  {
+    pop_n_elems(args);
+    push_int(0);
+  }
+}
 
 INIT
 {
@@ -5658,6 +5757,15 @@ PIKEFUN void destroy()
     {
      delete termgenerator;
     }
+
+}
+
+EXTRA
+{
+/*! @decl constant OP_AND
+ *! Return iff both subqueries are satisfied.
+ */
+add_integer_constant("FLAG_SPELLING", TermGenerator::FLAG_SPELLING, 0);
 
 }
 

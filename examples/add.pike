@@ -19,6 +19,15 @@ int main(int argc, array argv)
 
   // adding terms to the database
   // see http://xapian.org/docs/termgenerator.html
+  object termg = TermGenerator();
+  termg->set_database(database);
+  termg->set_document(d);
+  termg->set_stemmer(s);
+  termg->set_flags(TermGenerator.FLAG_SPELLING, 0);
+  termg->index_text(doc, 1, "");
+
+  // old term generation technique.
+  /*
   foreach(terms; int i; string term)
   {
     term = lower_case(term);
@@ -27,6 +36,7 @@ int main(int argc, array argv)
     if(!(term[0] >= '0' && term[0] <= '9'))
       d->add_term("Z" + s(term), 1);
   }
+  */
 
   d->set_data(Stdio.read_file(argv[2]));
   d->add_value(0, argv[2]);

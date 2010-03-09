@@ -607,7 +607,8 @@ PIKECLASS NumberValueRangeProcessor
     pop_n_elems(args);
   }
 
-/*! @decl void create(int valueno, string _str, int[0..1] is_prefix)
+/*! @decl void create(int valueno, string _str, int is_prefix)
+ *!
  *! The string supplied in str_ is used by operator() to decide whether 
  *! the pair of strings supplied to it constitute a valid range. If 
  *! prefix_ is true, the first value in a range must begin with str_ (and 

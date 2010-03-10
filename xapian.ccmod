@@ -642,18 +642,13 @@ PIKECLASS NumberValueRangeProcessor
   }
 
 }
-/*!  @endclass
-*/
 
-/*! @class NumberValueRangeProcessor
+/*! @endclass
+ *!
+ */
+
+/*! @class DateValueRangeProcessor
  *! @inherit ValueRangeProcessor
- *!
- *! Handle a number range.
- *!
- *! This class must be used on values which have been encoded using 
- *! @[Public.Xapian.sortable_serialise]() which turns numbers into strings 
- *! which will sort in the same order as the numbers (the same values can 
- *! be used to implement a numeric sort).
  *!
  */
 
@@ -661,7 +656,7 @@ PIKECLASS DateValueRangeProcessor
 {
   INHERIT ValueRangeProcessor;
 
-/*! @decl void create(int valueno, int[0..1] prefer_mdy, int epoch_year)
+/*! @decl void create(int valueno, int prefer_mdy, int epoch_year)
  *! @param valueno
  *!    The value number to return from `()().
  *! @param prefer_mdy
@@ -4634,7 +4629,7 @@ PIKEFUN void set_default_op(int op)
  *!
  *!   * STEM_SOME: Search for stemmed forms of terms except for those 
  *!  which start with a capital letter, or are followed by certain 
- *! characters (currently: (/@<>=*[{" ), or are used with operators which 
+ *! characters (currently: (/@@<>=*[{" ), or are used with operators which 
  *! need positional information. Stemmed terms are prefixed with 'Z'.
  *!
  *!   * STEM_ALL: Search for stemmed forms of all words (note: no 'Z' 
@@ -5589,9 +5584,8 @@ PIKEFUN void set_document(object document)
   }
   pop_n_elems(args);
 }
-/*!
-*!
-*!  @decl object get_document()
+
+/*! @decl object get_document()
 *!
 */
   PIKEFUN object get_document()
@@ -5683,8 +5677,8 @@ PIKEFUN void set_database(object database)
 }
 
 
-/*!
- *! @decl void set_termpos(int termpos)
+
+/*! @decl void set_termpos(int termpos)
  *!
  */
 PIKEFUN void set_termpos(int termpos)
@@ -5698,8 +5692,8 @@ PIKEFUN void set_termpos(int termpos)
   pop_n_elems(args);
 }
 
-/*!
- *! @decl int get_termpos()
+
+/*! @decl int get_termpos()
  *!
  */
 PIKEFUN int get_termpos()
@@ -5715,8 +5709,8 @@ PIKEFUN int get_termpos()
   push_int((int)termpos);
 }
 
-/*!
- *!  @decl void index_text(string text, int weight, string prefix)
+
+/*! @decl void index_text(string text, int weight, string prefix)
  *!
  *! @note
  *!   this function is wide-string aware.
@@ -5738,8 +5732,8 @@ PIKEFUN void index_text(string text, int weight, string prefix)
   pop_n_elems(args+1);
 }
 
-/*!
- *!  @decl void index_text_without_positions(string text, int weight, string prefix)
+
+/*! @decl void index_text_without_positions(string text, int weight, string prefix)
  *!
  *! @note
  *!   this function is wide-string aware.

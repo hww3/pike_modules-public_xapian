@@ -371,7 +371,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy()
+PIKEFUN void destroy(int reason)
 {
 
     Weight *weight;
@@ -382,6 +382,7 @@ PIKEFUN void destroy()
      delete weight;
     }
 
+    pop_n_elems(args);
 }
 
 EXIT 
@@ -530,7 +531,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy()
+PIKEFUN void destroy(int reason)
 {
     ValueRangeProcessor  *vrp;
     vrp = THIS->object_data->processor;
@@ -539,6 +540,8 @@ PIKEFUN void destroy()
     {
      delete vrp;
     }
+
+    pop_n_elems(args)
 }
 
 EXIT 
@@ -759,7 +762,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy()
+PIKEFUN void destroy(int reason)
 {
 
     Stopper  *stopper;
@@ -770,6 +773,7 @@ PIKEFUN void destroy()
      delete stopper;
     }
 
+    pop_n_elems(args);
 }
 
 EXIT 
@@ -1001,7 +1005,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy()
+PIKEFUN void destroy(int reason)
 {
 
     Stem  *stem;
@@ -1012,6 +1016,7 @@ PIKEFUN void destroy()
      delete stem;
     }
 
+    pop_n_elems(args);
 }
 
 EXIT 
@@ -4049,7 +4054,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy()
+PIKEFUN void destroy(int reason)
 {
     Database  *db;
     db = THIS->object_data->database;
@@ -4059,6 +4064,9 @@ PIKEFUN void destroy()
       //printf("deleting db\n");
       delete db;
     }
+
+    pop_n_elems(args);
+
 }
 
 EXIT 
@@ -5811,7 +5819,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy()
+PIKEFUN void destroy(int reason)
 {
 
     TermGenerator * termgenerator;
@@ -5822,6 +5830,7 @@ PIKEFUN void destroy()
      delete termgenerator;
     }
 
+    pop_n_elems(args);
 }
 
 EXTRA

@@ -541,7 +541,7 @@ PIKEFUN void destroy(int reason)
      delete vrp;
     }
 
-    pop_n_elems(args)
+    pop_n_elems(args);
 }
 
 EXIT 

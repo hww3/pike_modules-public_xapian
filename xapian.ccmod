@@ -371,7 +371,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy(int reason)
+PIKEFUN void destroy(int|void reason)
 {
 
     Weight *weight;
@@ -531,7 +531,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy(int reason)
+PIKEFUN void destroy(int|void reason)
 {
     ValueRangeProcessor  *vrp;
     vrp = THIS->object_data->processor;
@@ -762,7 +762,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy(int reason)
+PIKEFUN void destroy(int|void reason)
 {
 
     Stopper  *stopper;
@@ -1005,7 +1005,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy(int reason)
+PIKEFUN void destroy(int|void reason)
 {
 
     Stem  *stem;
@@ -4054,7 +4054,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy(int reason)
+PIKEFUN void destroy(int|void reason)
 {
     Database  *db;
     db = THIS->object_data->database;
@@ -5819,7 +5819,7 @@ INIT
  *!  
  *!
  */
-PIKEFUN void destroy(int reason)
+PIKEFUN void destroy(int|void reason)
 {
 
     TermGenerator * termgenerator;

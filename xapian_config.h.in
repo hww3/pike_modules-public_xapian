@@ -27,6 +27,12 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* "have Weight::get_maxpart */
+#undef HAVE_WEIGHT_GETMAXPART
+
+/* have Weight::get_sumpart_needs_doclength */
+#undef HAVE_WEIGHT_GET_SUMPART_NEEDS_DOCLENGTH
+
 /* Define to 1 if you have the <xapian.h> header file. */
 #undef HAVE_XAPIAN_H
 

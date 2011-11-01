@@ -1,3 +1,8 @@
+Version 1.6
+
+- fixes for Xapian 1.2
+- fix Query->create(op, query, float) to actually pass the float.
+
 Version 1.5
 
 - Fixes for autodoc

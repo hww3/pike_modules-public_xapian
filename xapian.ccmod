@@ -1,3 +1,4 @@
+#define DEFAULT_CMOD_STORAGE
 /*! @module Public
  */
 
@@ -213,12 +214,16 @@ CVAR XAPIAN_WEIGHT_OBJECT_DATA   *object_data;
  */
 PIKEFUN int get_sumpart_needs_doclength()
 {
+#ifdef HAVE_WEIGHT_GET_SUMPART_NEEDS_DOCLENGTH
   Weight *weight;
   weight = THIS->object_data->weight;
 
   bool i = weight->get_sumpart_needs_doclength();
 
   push_int(i?1:0);
+#else
+  push_int(0);
+#endif /* HAVE_WEIGHT_GET_SUMPART_NEEDS_DOCLENGTH */
 }
 
 /*  Weight.float get_maxpart() */
@@ -420,20 +425,6 @@ PIKECLASS BM25Weight
     THIS->object_data->weight = weight;
   }
 
-  PIKEFUN object clone()
-  {
-    BM25Weight * weight;
-    BM25Weight * weight2;
-    struct object * obj;
-
-    weight = (BM25Weight *)THIS->object_data->weight;
-    weight2 = weight->clone();
-
-    obj = fast_clone_object(BM25Weight_program);
-    OBJ2_WEIGHT(obj)->object_data->weight = (Weight *)weight2;
-
-    push_object(obj);    
-  }
 }
 
 /*!  @endclass
@@ -1204,7 +1195,7 @@ PIKEFUN void create(int op, object query, float param)
 
   try
   {
-    Query* qe = new Query((Xapian::Query::op)op, *q);
+    Query* qe = new Query((Xapian::Query::op)op, *q, param);
 
     pop_n_elems(args);
 
@@ -1594,7 +1585,7 @@ PIKECLASS ValueIterator
 
     struct object * o;
 
-    valuei2 = new ValueIterator((*valuei)++);
+    valuei2 = new ValueIterator(*(valuei++));
 
     o = fast_clone_object(ValueIterator_program);
 

@@ -1,3 +1,67 @@
+AC_DEFUN([AX_CXX_CHECK_LIB],
+[m4_ifval([$3], , [AH_CHECK_LIB([$1])])dnl
+AS_LITERAL_IF([$1],
+	      [AS_VAR_PUSHDEF([ac_Lib], [ac_cv_lib_$1_$2])],
+	      [AS_VAR_PUSHDEF([ac_Lib], [ac_cv_lib_$1''_$2])])dnl
+AC_CACHE_CHECK([for $2 in -l$1], ac_Lib,
+[ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$1 $5 $LIBS"
+case "$2" 
+in *::*::*\(*)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
+ namespace `echo "$2" | sed -e "s/::.*//"` 
+ { class `echo "$2" | sed -e "s/.*::\\(.*\\)::.*/\\1/" -e "s/(.*//"` 
+   { public: int `echo "$2" | sed -e "s/.*:://" -e "/(/!s/..*/&()/"`;
+   };
+ }
+],[`echo "$2" | sed  -e "s/(.*//" -e "s/\\(.*\\)::\\(.*\\)/((\\1*)(0))->\\2/g"`()])],
+	       [AS_VAR_SET(ac_Lib, yes)],
+	       [AS_VAR_SET(ac_Lib, no)])
+;; *::*::*)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
+ namespace `echo "$2" | sed -e "s/::.*//"` 
+ { namespace `echo "$2" | sed -e "s/.*::\\(.*\\)::.*/\\1/"` 
+   { class `echo "$2" | sed -e "s/.*:://"` 
+      { public: `echo "$2" | sed -e "s/.*:://"` ();
+      };
+   }
+ }
+],[new $2()])],
+	       [AS_VAR_SET(ac_Lib, yes)],
+	       [AS_VAR_SET(ac_Lib, no)])
+;; *::*\(*)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
+ class `echo "$2" | sed -e "s/\\(.*\\)::.*/\\1/" -e "s/(.*//"` 
+   { public: int `echo "$2" | sed -e "s/.*:://" -e "/(/!s/..*/&()/"`;
+   };
+],[`echo "$2" | sed  -e "s/(.*//" -e "s/\\(.*\\)::\\(.*\\)/((\\1*)(0))->\\2/g"`()])],
+	       [AS_VAR_SET(ac_Lib, yes)],
+	       [AS_VAR_SET(ac_Lib, no)])
+;; *::*)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
+ namespace `echo "$2" | sed -e "s/::.*//"` 
+ { class `echo "$2" | sed -e "s/.*:://"`
+   { public: `echo "$2" | sed -e "s/.*:://"` ();
+   };
+ }
+],[new $2()])],
+	       [AS_VAR_SET(ac_Lib, yes)],
+	       [AS_VAR_SET(ac_Lib, no)])
+;; *)
+AC_LINK_IFELSE([AC_LANG_CALL([], [$2])],
+	       [AS_VAR_SET(ac_Lib, yes)],
+	       [AS_VAR_SET(ac_Lib, no)])
+;; esac
+LIBS=$ac_check_lib_save_LIBS])
+AS_IF([test AS_VAR_GET(ac_Lib) = yes],
+      [m4_default([$3], [AC_DEFINE_UNQUOTED(AS_TR_CPP(HAVE_LIB$1))
+  LIBS="-l$1 $LIBS"
+])],
+      [$4])dnl
+AS_VAR_POPDEF([ac_Lib])dnl
+])# AC_CHECK_LIB
+
+
 # $Id: configure.in,v 1.2 2007-02-09 20:33:04 hww3 Exp $
 AC_INIT(xapian_config.h.in)
 
@@ -7,20 +71,13 @@ AC_CONFIG_HEADERS(xapian_config.h)
 AC_PROG_CXX
 AC_LANG(C++)
 
-# PKG_CHECK_MODULES(XML2, libxml-2.0)
-# PKG_CHECK_MODULES(XSLT, libxslt)
-
-# CPPFLAGS="${CPPFLAGS} ${XML2_CFLAGS} ${XSLT_CFLAGS}"
-# LDFLAGS="${LDFLAGS} ${XML2_LIBS} ${XSLT_LIBS}"
-
 CMOD_LIBS="-lxapian"
 CMOD_FLAGS=""
 
-
 AC_CHECK_HEADERS(xapian.h)
-# AC_CHECK_LIB(xml2, xmlCleanupParser) 
 
-# AC_CHECK_FUNCS(xmlNewDocPI) 
+AX_CXX_CHECK_LIB(xapian, [Xapian::ScaleWeight::get_sumpart_needs_doclength () const], [AC_DEFINE([HAVE_WEIGHT_GET_SUMPART_NEEDS_DOCLENGTH], [1], [have Weight::get_sumpart_needs_doclength])])
+AX_CXX_CHECK_LIB(xapian, [Xapian::BoolWeight::get_maxpart () const], [AC_DEFINE([HAVE_WEIGHT_GETMAXPART], [1], ["have Weight::get_maxpart])])
 
 AC_SUBST(CMOD_CFLAGS) 
 AC_SUBST(CMOD_LIBS)

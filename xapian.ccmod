@@ -1479,7 +1479,7 @@ PIKECLASS PositionIterator
       Pike_error("RangeError\n");
     }
   }
-
+/*
   PIKEFUN mixed `+=(int i)
   {
     PositionIterator  *pi;
@@ -1495,7 +1495,7 @@ PIKECLASS PositionIterator
     pop_stack();
     push_object(this_object());
   }
- 
+ */
   PIKEFUN int `!()
   {
     PositionIterator  *pi;
@@ -1579,29 +1579,43 @@ PIKECLASS ValueIterator
 
   PIKEFUN object next()
   {
-    ValueIterator  *valuei;
-    valuei = THIS->object_data->valuei;
-    ValueIterator *valuei2;
+    ValueIterator v;
+    ++(*(THIS->object_data->valuei));
 
-    struct object * o;
-
-    valuei2 = new ValueIterator(*(valuei++));
-
-    o = fast_clone_object(ValueIterator_program);
-
-    OBJ2_VALUEITERATOR(o)->object_data->valuei = valuei;
-
-    push_object(o);    
+    push_object(this_object());    
   }
 
   PIKEFUN mixed index()
   {
-    push_int(THIS->current_index);
+    int i = 21;
+
+    try
+    {
+      ValueIterator v = *(THIS->object_data->valuei);
+      i = v.get_valueno();
+    }    
+    catch(const RangeError &e)
+    {
+      pop_n_elems(args);
+      Pike_error("RangeError\n");
+    }
+    push_int(i);
   }
 
-  PIKEFUN object value()
+  PIKEFUN string value()
   {
-    push_object(this_object());
+    string i;
+
+    try
+    {
+      i = (*(*(THIS->object_data->valuei)));
+      push_text(i.c_str());
+    }
+    catch(const RangeError &e)
+    {
+      pop_n_elems(args);
+      Pike_error("RangeError\n");
+    }
   }
 
   PIKEFUN int `==(mixed arg)
@@ -1631,13 +1645,13 @@ PIKECLASS ValueIterator
  */
   PIKEFUN int get_valueno()
   {
-    
-    ValueIterator  *valuei;
     valueno i;
+
     try 
-    {
-      valuei = (ValueIterator*)THIS->object_data->valuei;
-      i = valuei->get_valueno();
+    { 
+      ValueIterator v;
+      v = *(THIS->object_data->valuei);
+      i = v.get_valueno();
       push_int((INT_TYPE)i);
     }
     catch(const RangeError &e)
@@ -1645,8 +1659,6 @@ PIKECLASS ValueIterator
       pop_n_elems(args);
       Pike_error("RangeError\n");
     }
-
-
   }
 
 /*! @decl int get_value()
@@ -1658,13 +1670,12 @@ PIKECLASS ValueIterator
  */
   PIKEFUN string get_value()
   {
-    ValueIterator  *valuei;
     string i;
+    printf("calling get_value()\n");
 
     try
     {
-      valuei = (ValueIterator*)THIS->object_data->valuei;
-      i = (*(*valuei));
+      i = (*(*(THIS->object_data->valuei)));
       push_text(i.c_str());
     }
     catch(const RangeError &e)
@@ -1674,27 +1685,12 @@ PIKECLASS ValueIterator
     }
   }
 
-  PIKEFUN mixed `+=(int i)
-  {
-    ValueIterator  *vi;
-    vi = THIS->object_data->valuei;
-    
-    for(int x = 0; x < i; x++)
-    {
-      (*vi)++;
-      if(*vi == *(THIS->vie)) {
-        pop_stack(); push_int(0); return;}
-    }
-    THIS->current_index++;
-    pop_stack();
-    push_object(this_object());
-  }
- 
   PIKEFUN int `!()
   {
-    ValueIterator  *vi;
-    vi = THIS->object_data->valuei;
-    if(*vi == *(THIS->vie)) { push_int(1); }
+    if(!THIS->vie)
+      Pike_error("No end position specified. Did you create this iterator yourself?\n");
+
+    if(*(THIS->object_data->valuei) == *(THIS->vie)) { push_int(1); }
     else
       push_int(0);
   }
@@ -1709,10 +1705,7 @@ PIKECLASS ValueIterator
  */
 PIKEFUN string get_description()
 {
-  ValueIterator  *valuei;
-  valuei = THIS->object_data->valuei;
-
-  string str = valuei->get_description();
+  string str = THIS->object_data->valuei->get_description();
 
   push_text(str.c_str());
 }
@@ -1722,9 +1715,7 @@ PIKEFUN string _sprintf(int conversion_type, mapping params)
   ValueIterator  *it;
   if(THIS && THIS->object_data && conversion_type == 'O')
   {
-    it = THIS->object_data->valuei;
-
-    string str = it->get_description();
+    string str = THIS->object_data->valuei->get_description();
     pop_n_elems(args);
     push_text(str.c_str());
   }
@@ -1774,19 +1765,8 @@ PIKECLASS TermIterator
 
   PIKEFUN object next()
   {
-    TermIterator  * termi;
-    termi = THIS->object_data->termi;
-    TermIterator *termi2;
-
-    struct object * o;
-
-    termi2 = new TermIterator(++(*termi));
-
-    o = fast_clone_object(TermIterator_program);
-
-    OBJ2_TERMITERATOR(o)->object_data->termi = termi;
-
-    push_object(o);    
+    ++(*(THIS->object_data->termi));
+    push_object(this_object());    
   }
 
   PIKEFUN mixed index()
@@ -2062,21 +2042,16 @@ PIKEFUN void set_data(string data)
 PIKEFUN object value_iterator()
 {
   Document  *doc;
+  ValueIterator b, e, *a, *c;
   doc = THIS->object_data->document;
 
-  ValueIterator vi;
-  ValueIterator * vi2;
   struct object * o;
-
-  vi = doc->values_begin();
-  vi2 = new ValueIterator(vi);
 
   o = fast_clone_object(ValueIterator_program);
 
-  OBJ2_VALUEITERATOR(o)->object_data->valuei = vi2;
-  OBJ2_VALUEITERATOR(o)->vie = new ValueIterator(doc->values_end());
-
-  push_object(o);    
+  (OBJ2_VALUEITERATOR(o)->object_data->valuei) = new ValueIterator(doc->values_begin());
+  (OBJ2_VALUEITERATOR(o)->vie) = new ValueIterator(doc->values_end());
+  push_object(o);
 }
 
 /*! @decl TermIterator term_iterator()

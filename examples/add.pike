@@ -40,6 +40,8 @@ int main(int argc, array argv)
 
   d->set_data(Stdio.read_file(argv[2]));
   d->add_value(0, argv[2]);
+  d->add_value(1, argv[2]);
+  d->add_value(3, argv[2]);
   database->add_document(d);
   database = 0;
   return 0;

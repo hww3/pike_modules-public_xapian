@@ -29,11 +29,13 @@ if(sizeof(cqs))
 //  while( i != mset->end())
   foreach(mset; int ix; object i)
   {
-    werror(i->get_percent() + "%: " + i->get_document()->get_value(1)  + "\n");
-    foreach(i->get_document()->value_iterator(); int id; object v)
+    object d = i->get_document();
+    werror(i->get_percent() + "%: " + d->get_value(1)  + " (id=" + i->get_docid() + ")\n");
+    foreach(d->value_iterator(); int id; object v)
     {
-      werror("  value %d: %s\n", id, v->get_value());
+      werror("  value %d: %s\n", id, v);
     }
+
       werror("  matching terms:");
     foreach(e->get_matching_terms(i->get_docid()); ; mixed term)
     {

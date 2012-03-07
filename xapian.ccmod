@@ -1390,15 +1390,10 @@ PIKECLASS PositionIterator
 
   PIKEFUN object next()
   {
-    PositionIterator  *pi;
-    pi = THIS->object_data->positioni;
-
-    struct object * o;
-(*pi)++;
+    ++(*(THIS->object_data->positioni));
 
    THIS->current_index++;
-    if(*pi == *(THIS->pie)) {push_int(0); return;}
-    push_int(1);    
+    push_object(this_object());    
   }
 
   PIKEFUN mixed index()
@@ -1479,23 +1474,7 @@ PIKECLASS PositionIterator
       Pike_error("RangeError\n");
     }
   }
-/*
-  PIKEFUN mixed `+=(int i)
-  {
-    PositionIterator  *pi;
-    pi = THIS->object_data->positioni;
-    
-    for(int x = 0; x < i; x++)
-    {
-      (*pi)++;
-      if(*pi == *(THIS->pie)) {
-        pop_stack(); push_int(0); return;}
-    }
-    THIS->current_index++;
-    pop_stack();
-    push_object(this_object());
-  }
- */
+
   PIKEFUN int `!()
   {
     PositionIterator  *pi;
@@ -1546,7 +1525,7 @@ INIT
     XAPIAN_POSITIONITERATOR_OBJECT_DATA * dta = 
 	(XAPIAN_POSITIONITERATOR_OBJECT_DATA*)malloc(sizeof(XAPIAN_POSITIONITERATOR_OBJECT_DATA));
     if (!dta)
-        Pike_error("init_sample: Out of memory!\n");
+        Pike_error("init_positioniterator: Out of memory!\n");
 
     dta->positioni = NULL;
     THIS->object_data = dta;

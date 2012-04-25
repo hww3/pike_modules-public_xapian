@@ -1,4 +1,5 @@
 /* Standard Pike include files. */
+#include "svalue.h"
 #include "bignum.h"
 #include "array.h"
 #include "builtin_functions.h"
@@ -12,7 +13,6 @@
 #include "pike_types.h"
 #include "program.h"
 #include "stralloc.h"
-#include "svalue.h"
 #include "threads.h"
 #include "version.h"
 #include "operators.h"

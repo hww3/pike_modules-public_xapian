@@ -1,0 +1,4 @@
+MODULE=Public.Xapian
+VERSION=1.6
+PLATFORM=win32/i586
+

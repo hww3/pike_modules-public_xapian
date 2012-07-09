@@ -71,13 +71,35 @@ AC_CONFIG_HEADERS(xapian_config.h)
 AC_PROG_CXX
 AC_LANG(C++)
 
-CMOD_LIBS="-lxapian"
+CMOD_LIBS=""
 CMOD_FLAGS=""
 
 AC_CHECK_HEADERS(xapian.h)
 
 AX_CXX_CHECK_LIB(xapian, [Xapian::ScaleWeight::get_sumpart_needs_doclength () const], [AC_DEFINE([HAVE_WEIGHT_GET_SUMPART_NEEDS_DOCLENGTH], [1], [have Weight::get_sumpart_needs_doclength])])
 AX_CXX_CHECK_LIB(xapian, [Xapian::BoolWeight::get_maxpart () const], [AC_DEFINE([HAVE_WEIGHT_GETMAXPART], [1], ["have Weight::get_maxpart])])
+
+AC_CHECK_LIB(libbackend)
+AC_CHECK_LIB(libbrass)
+AC_CHECK_LIB(libchert)
+AC_CHECK_LIB(libcommon)
+AC_CHECK_LIB(libexpand)
+AC_CHECK_LIB(libinmemory)
+AC_CHECK_LIB(libflint)
+AC_CHECK_LIB(libflintbtreecheck)
+AC_CHECK_LIB(libchertbtreecheck)
+AC_CHECK_LIB(libbrassbtreecheck)
+AC_CHECK_LIB(libmatcher)
+AC_CHECK_LIB(libmulti)
+AC_CHECK_LIB(libnet)
+AC_CHECK_LIB(libqueryparser)
+AC_CHECK_LIB(libremote)
+AC_CHECK_LIB(libtest)
+AC_CHECK_LIB(libunicode)
+AC_CHECK_LIB(libweight)
+AC_CHECK_LIB(liblanguages)
+
+AC_CHECK_LIB(xapian);
 
 AC_SUBST(CMOD_CFLAGS) 
 AC_SUBST(CMOD_LIBS)

@@ -99,7 +99,7 @@ AC_CHECK_LIB(libunicode)
 AC_CHECK_LIB(libweight)
 AC_CHECK_LIB(liblanguages)
 
-AC_CHECK_LIB(xapian);
+AC_CHECK_LIB(xapian)
 
 AC_SUBST(CMOD_CFLAGS) 
 AC_SUBST(CMOD_LIBS)

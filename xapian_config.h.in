@@ -3,6 +3,69 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `libbackend' library (-llibbackend). */
+#undef HAVE_LIBLIBBACKEND
+
+/* Define to 1 if you have the `libbrass' library (-llibbrass). */
+#undef HAVE_LIBLIBBRASS
+
+/* Define to 1 if you have the `libbrassbtreecheck' library
+   (-llibbrassbtreecheck). */
+#undef HAVE_LIBLIBBRASSBTREECHECK
+
+/* Define to 1 if you have the `libchert' library (-llibchert). */
+#undef HAVE_LIBLIBCHERT
+
+/* Define to 1 if you have the `libchertbtreecheck' library
+   (-llibchertbtreecheck). */
+#undef HAVE_LIBLIBCHERTBTREECHECK
+
+/* Define to 1 if you have the `libcommon' library (-llibcommon). */
+#undef HAVE_LIBLIBCOMMON
+
+/* Define to 1 if you have the `libexpand' library (-llibexpand). */
+#undef HAVE_LIBLIBEXPAND
+
+/* Define to 1 if you have the `libflint' library (-llibflint). */
+#undef HAVE_LIBLIBFLINT
+
+/* Define to 1 if you have the `libflintbtreecheck' library
+   (-llibflintbtreecheck). */
+#undef HAVE_LIBLIBFLINTBTREECHECK
+
+/* Define to 1 if you have the `libinmemory' library (-llibinmemory). */
+#undef HAVE_LIBLIBINMEMORY
+
+/* Define to 1 if you have the `liblanguages' library (-lliblanguages). */
+#undef HAVE_LIBLIBLANGUAGES
+
+/* Define to 1 if you have the `libmatcher' library (-llibmatcher). */
+#undef HAVE_LIBLIBMATCHER
+
+/* Define to 1 if you have the `libmulti' library (-llibmulti). */
+#undef HAVE_LIBLIBMULTI
+
+/* Define to 1 if you have the `libnet' library (-llibnet). */
+#undef HAVE_LIBLIBNET
+
+/* Define to 1 if you have the `libqueryparser' library (-llibqueryparser). */
+#undef HAVE_LIBLIBQUERYPARSER
+
+/* Define to 1 if you have the `libremote' library (-llibremote). */
+#undef HAVE_LIBLIBREMOTE
+
+/* Define to 1 if you have the `libtest' library (-llibtest). */
+#undef HAVE_LIBLIBTEST
+
+/* Define to 1 if you have the `libunicode' library (-llibunicode). */
+#undef HAVE_LIBLIBUNICODE
+
+/* Define to 1 if you have the `libweight' library (-llibweight). */
+#undef HAVE_LIBLIBWEIGHT
+
+/* Define to 1 if you have the `xapian' library (-lxapian). */
+#undef HAVE_LIBXAPIAN
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -47,6 +110,9 @@
 
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION

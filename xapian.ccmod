@@ -4055,8 +4055,15 @@ PIKEFUN void create(string path, int mode)
   {
     const string str((const char *)path->str, (size_t)path->len);
 
-    WritableDatabase* database = new WritableDatabase(str, mode);
-
+    WritableDatabase* database;
+    try
+    {
+      database  = new WritableDatabase(str, mode);
+    }
+    catch (const Error &error) 
+    {
+      Pike_error("Exception: %s\n", error.get_msg().c_str());
+    }
     pop_n_elems(args);
 
     THIS->object_data->database = database;

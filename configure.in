@@ -11,10 +11,10 @@ in *::*::*\(*)
 AC_LINK_IFELSE([AC_LANG_PROGRAM([
  namespace `echo "$2" | sed -e "s/::.*//"` 
  { class `echo "$2" | sed -e "s/.*::\\(.*\\)::.*/\\1/" -e "s/(.*//"` 
-   { public: int `echo "$2" | sed -e "s/.*:://" -e "/(/!s/..*/&()/"`;
+   { public: int `echo "$2" | sed -e "s/.*:://" -e "/(/!s/..*/&amp;amp;()/"`;
    };
  }
-],[`echo "$2" | sed  -e "s/(.*//" -e "s/\\(.*\\)::\\(.*\\)/((\\1*)(0))->\\2/g"`()])],
+],[`echo "$2" | sed  -e "s/(.*//" -e "s/\\(.*\\)::\\(.*\\)/((\\1*)(0))-&amp;gt;\\2/g"`()])],
 	       [AS_VAR_SET(ac_Lib, yes)],
 	       [AS_VAR_SET(ac_Lib, no)])
 ;; *::*::*)
@@ -32,9 +32,9 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([
 ;; *::*\(*)
 AC_LINK_IFELSE([AC_LANG_PROGRAM([
  class `echo "$2" | sed -e "s/\\(.*\\)::.*/\\1/" -e "s/(.*//"` 
-   { public: int `echo "$2" | sed -e "s/.*:://" -e "/(/!s/..*/&()/"`;
+   { public: int `echo "$2" | sed -e "s/.*:://" -e "/(/!s/..*/&amp;amp;()/"`;
    };
-],[`echo "$2" | sed  -e "s/(.*//" -e "s/\\(.*\\)::\\(.*\\)/((\\1*)(0))->\\2/g"`()])],
+],[`echo "$2" | sed  -e "s/(.*//" -e "s/\\(.*\\)::\\(.*\\)/((\\1*)(0))-&amp;gt;\\2/g"`()])],
 	       [AS_VAR_SET(ac_Lib, yes)],
 	       [AS_VAR_SET(ac_Lib, no)])
 ;; *::*)
@@ -76,6 +76,7 @@ CMOD_FLAGS=""
 
 AC_CHECK_HEADERS(xapian.h)
 
+AX_CXX_CHECK_LIB(xapian, [Xapian::Database])
 AX_CXX_CHECK_LIB(xapian, [Xapian::ScaleWeight::get_sumpart_needs_doclength () const], [AC_DEFINE([HAVE_WEIGHT_GET_SUMPART_NEEDS_DOCLENGTH], [1], [have Weight::get_sumpart_needs_doclength])])
 AX_CXX_CHECK_LIB(xapian, [Xapian::BoolWeight::get_maxpart () const], [AC_DEFINE([HAVE_WEIGHT_GETMAXPART], [1], ["have Weight::get_maxpart])])
 
@@ -99,7 +100,7 @@ AC_CHECK_LIB(libunicode)
 AC_CHECK_LIB(libweight)
 AC_CHECK_LIB(liblanguages)
 
-AC_CHECK_LIB(xapian)
+CMOD_LIBS="$CMOD_LIBS $LIBS"
 
 AC_SUBST(CMOD_CFLAGS) 
 AC_SUBST(CMOD_LIBS)

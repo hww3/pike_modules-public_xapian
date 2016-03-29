@@ -28,31 +28,33 @@ using namespace std;
 
 #include <ctype.h>
 
-#define OBJ2_MSET(o) ((struct MSet_struct *)get_storage(o, MSet_program))
-#define OBJ2_ESET(o) ((struct ESet_struct *)get_storage(o, ESet_program))
-#define OBJ2_STEM(o) ((struct Stem_struct *)get_storage(o, Stem_program))
-#define OBJ2_STOPPER(o) ((struct Stopper_struct *)get_storage(o, Stopper_program))
-#define OBJ2_MSETITERATOR(o) ((struct MSetIterator_struct *)get_storage(o, MSetIterator_program))
-#define OBJ2_ESETITERATOR(o) ((struct ESetIterator_struct *)get_storage(o, ESetIterator_program))
-#define OBJ2_VALUEITERATOR(o) ((struct ValueIterator_struct *)get_storage(o, ValueIterator_program))
-#define OBJ2_TERMITERATOR(o) ((struct TermIterator_struct *)get_storage(o, TermIterator_program))
-#define OBJ2_POSITIONITERATOR(o) ((struct PositionIterator_struct *)get_storage(o, PositionIterator_program))
-#define OBJ2_DOCUMENT(o) ((struct Document_struct *)get_storage(o, Document_program))
-#define OBJ2_DATABASE(o) ((struct Database_struct *)get_storage(o, Database_program))
-#define OBJ2_QUERY(o) ((struct Query_struct *)get_storage(o, Query_program))
-#define OBJ2_TERMGENERATOR(o) ((struct TermGenerator_struct *)get_storage(o, TermGenerator_program))
-#define OBJ2_VALUERANGEPROCESSOR(o) ((struct ValueRangeProcessor_struct *)get_storage(o, ValueRangeProcessor_program))
+#define OBJ2_MSET(o) ((struct Xapian_MSet_struct *)get_storage(o, Xapian_MSet_program))
+#define OBJ2_ESET(o) ((struct Xapian_ESet_struct *)get_storage(o, Xapian_ESet_program))
+#define OBJ2_STEM(o) ((struct Xapian_Stem_struct *)get_storage(o, Xapian_Stem_program))
+#define OBJ2_RSET(o) ((struct Xapian_RSet_struct *)get_storage(o, Xapian_RSet_program))
+#define OBJ2_STOPPER(o) ((struct Xapian_Stopper_struct *)get_storage(o, Xapian_Stopper_program))
+#define OBJ2_WEIGHT(o) ((struct Xapian_Weight_struct *)get_storage(o, Xapian_Weight_program))
+#define OBJ2_MSETITERATOR(o) ((struct Xapian_MSetIterator_struct *)get_storage(o, Xapian_MSetIterator_program))
+#define OBJ2_ESETITERATOR(o) ((struct Xapian_ESetIterator_struct *)get_storage(o, Xapian_ESetIterator_program))
+#define OBJ2_VALUEITERATOR(o) ((struct Xapian_ValueIterator_struct *)get_storage(o, Xapian_ValueIterator_program))
+#define OBJ2_TERMITERATOR(o) ((struct Xapian_TermIterator_struct *)get_storage(o, Xapian_TermIterator_program))
+#define OBJ2_POSITIONITERATOR(o) ((struct Xapian_PositionIterator_struct *)get_storage(o, Xapian_PositionIterator_program))
+#define OBJ2_DOCUMENT(o) ((struct Xapian_Document_struct *)get_storage(o, Xapian_Document_program))
+#define OBJ2_DATABASE(o) ((struct Xapian_Database_struct *)get_storage(o, Xapian_Database_program))
+#define OBJ2_QUERY(o) ((struct Xapian_Query_struct *)get_storage(o, Xapian_Query_program))
+#define OBJ2_TERMGENERATOR(o) ((struct Xapian_TermGenerator_struct *)get_storage(o, Xapian_TermGenerator_program))
+#define OBJ2_VALUERANGEPROCESSOR(o) ((struct Xapian_ValueRangeProcessor_struct *)get_storage(o, Xapian_ValueRangeProcessor_program))
 
 
-extern "C" struct program * Document_program;
-extern "C" struct program * MSetIterator_program;
-extern "C" struct program * ValueIterator_program;
-extern "C" struct program * TermIterator_program;
-extern "C" struct program * PositionIterator_program;
-extern "C" struct program * MSet_program;
-extern "C" struct program * Stem_program;
-extern "C" struct program * TermGenerator_program;
-extern "C" struct program * ValueRangeProcessor_program;
+extern "C" struct program * Xapian_Document_program;
+extern "C" struct program * Xapian_MSetIterator_program;
+extern "C" struct program * Xapian_ValueIterator_program;
+extern "C" struct program * Xapian_TermIterator_program;
+extern "C" struct program * Xapian_PositionIterator_program;
+extern "C" struct program * Xapian_MSet_program;
+extern "C" struct program * Xapian_Stem_program;
+extern "C" struct program * Xapian_TermGenerator_program;
+extern "C" struct program * Xapian_ValueRangeProcessor_program;
 extern "C" typedef struct
 {
     Database *database;
@@ -414,7 +416,7 @@ EXIT
 
 PIKECLASS BM25Weight
 {
-  INHERIT Weight;
+  INHERIT Xapian_Weight;
 
   PIKEFUN void create(float k1, float k2, float k3, float b, float min_normlen)
   {
@@ -437,7 +439,7 @@ PIKECLASS BM25Weight
 
 PIKECLASS BoolWeight
 {
-  INHERIT Weight;
+  INHERIT Xapian_Weight;
 
   PIKEFUN void create()
   {
@@ -463,7 +465,7 @@ PIKECLASS BoolWeight
 
 PIKECLASS TradWeight
 {
-  INHERIT Weight;
+  INHERIT Xapian_Weight;
 
   PIKEFUN void create(float k)
   {
@@ -562,13 +564,13 @@ EXIT
 
 PIKECLASS StringValueRangeProcessor
 {
-  INHERIT ValueRangeProcessor;
+  INHERIT Xapian_ValueRangeProcessor;
 
   PIKEFUN void create(int valueno)
   {
     StringValueRangeProcessor * vrp = new StringValueRangeProcessor(valueno);
 
-    THIS_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
+    THIS_XAPIAN_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
     pop_n_elems(args);
   }
 
@@ -591,13 +593,13 @@ PIKECLASS StringValueRangeProcessor
 
 PIKECLASS NumberValueRangeProcessor
 {
-  INHERIT ValueRangeProcessor;
+  INHERIT Xapian_ValueRangeProcessor;
 
   PIKEFUN void create(int valueno)
   {
     NumberValueRangeProcessor * vrp = new NumberValueRangeProcessor(valueno);
 
-    THIS_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
+    THIS_XAPIAN_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
     pop_n_elems(args);
   }
 
@@ -631,7 +633,7 @@ PIKECLASS NumberValueRangeProcessor
 
     vrp = new NumberValueRangeProcessor(valueno, str, is_prefix);
 
-    THIS_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
+    THIS_XAPIAN_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
     pop_n_elems(args);
   }
 
@@ -648,7 +650,7 @@ PIKECLASS NumberValueRangeProcessor
 
 PIKECLASS DateValueRangeProcessor
 {
-  INHERIT ValueRangeProcessor;
+  INHERIT Xapian_ValueRangeProcessor;
 
 /*! @decl void create(int valueno, int prefer_mdy, int epoch_year)
  *! @param valueno
@@ -664,7 +666,7 @@ PIKECLASS DateValueRangeProcessor
   {
     DateValueRangeProcessor * vrp = new DateValueRangeProcessor(valueno, prefer_mdy, epoch_year);
 
-    THIS_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
+    THIS_XAPIAN_VALUERANGEPROCESSOR->object_data->processor = (ValueRangeProcessor*) vrp ;
     pop_n_elems(args);
   }
 
@@ -791,7 +793,7 @@ EXIT
 
 PIKECLASS SimpleStopper
 {
-  INHERIT Stopper;
+  INHERIT Xapian_Stopper;
 
   PIKEFUN void create()
   {
@@ -815,7 +817,7 @@ PIKECLASS SimpleStopper
     
     SimpleStopper * stopper = new SimpleStopper(v.begin(), v.end());
 
-    THIS_STOPPER->object_data->stopper = (Stopper*) stopper;
+    THIS_XAPIAN_STOPPER->object_data->stopper = (Stopper*) stopper;
     pop_n_elems(args);
   }
 
@@ -826,7 +828,7 @@ PIKECLASS SimpleStopper
   {
     SimpleStopper * stopper;
     string str((const char*)word->str, (size_t)word->len);
-    stopper = (SimpleStopper *)THIS_STOPPER->object_data->stopper;
+    stopper = (SimpleStopper *)THIS_XAPIAN_STOPPER->object_data->stopper;
     stopper->add(str);
     pop_stack();
     
@@ -1411,9 +1413,9 @@ PIKECLASS PositionIterator
     struct object * o;
     PositionIterator  *posi;
     PositionIterator  *posb;
-    struct PositionIterator_struct * pis;    
+    struct Xapian_PositionIterator_struct * pis;    
 
-    if(arg->type!= T_OBJECT) RETURN(0);
+    if(TYPEOF(*arg)!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     posi = (PositionIterator*)THIS->object_data->positioni;
     pis = OBJ2_POSITIONITERATOR(o);
@@ -1602,9 +1604,9 @@ PIKECLASS ValueIterator
     struct object * o;
     ValueIterator  *valuei;
     ValueIterator  *valueb;
-    struct ValueIterator_struct * vis;    
+    struct Xapian_ValueIterator_struct * vis;    
 
-    if(arg->type!= T_OBJECT) RETURN(0);
+    if(TYPEOF(*arg)!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     valuei = (ValueIterator*)THIS->object_data->valuei;
     vis = OBJ2_VALUEITERATOR(o);
@@ -1763,9 +1765,9 @@ PIKECLASS TermIterator
     struct object * o;
     TermIterator  *termi;
     TermIterator  *termb;
-    struct TermIterator_struct * tis;    
+    struct Xapian_TermIterator_struct * tis;    
 
-    if(arg->type!= T_OBJECT) RETURN(0);
+    if(TYPEOF(*arg)!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     termi = (TermIterator*)THIS->object_data->termi;
     tis = OBJ2_TERMITERATOR(o);
@@ -1795,7 +1797,7 @@ PIKECLASS TermIterator
     pi = ti->positionlist_begin();
     pi2 = new PositionIterator(pi);
 
-    o = fast_clone_object(PositionIterator_program);
+    o = fast_clone_object(Xapian_PositionIterator_program);
 
     OBJ2_POSITIONITERATOR(o)->object_data->positioni = pi2;
     OBJ2_POSITIONITERATOR(o)->pie = new PositionIterator(ti->positionlist_end());
@@ -2026,7 +2028,7 @@ PIKEFUN object value_iterator()
 
   struct object * o;
 
-  o = fast_clone_object(ValueIterator_program);
+  o = fast_clone_object(Xapian_ValueIterator_program);
 
   (OBJ2_VALUEITERATOR(o)->object_data->valuei) = new ValueIterator(doc->values_begin());
   (OBJ2_VALUEITERATOR(o)->vie) = new ValueIterator(doc->values_end());
@@ -2050,7 +2052,7 @@ PIKEFUN object term_iterator()
   ti = doc->termlist_begin();
   ti2 = new TermIterator(ti);
 
-  o = fast_clone_object(TermIterator_program);
+  o = fast_clone_object(Xapian_TermIterator_program);
 
   OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
   OBJ2_TERMITERATOR(o)->tie = new TermIterator(doc->termlist_end());
@@ -2455,7 +2457,7 @@ PIKECLASS MSetIterator
     doc = mseti->get_document();    
     doc2 = new Document(doc);
 
-    o = fast_clone_object(Document_program);
+    o = fast_clone_object(Xapian_Document_program);
     OBJ2_DOCUMENT(o)->object_data->document = doc2;
 
     push_object(o);
@@ -2538,7 +2540,7 @@ PIKECLASS MSetIterator
 
     mseti2 = new MSetIterator((*mseti)--);
 
-    o = fast_clone_object(MSetIterator_program);
+    o = fast_clone_object(Xapian_MSetIterator_program);
 
     OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
 
@@ -2573,10 +2575,10 @@ PIKECLASS MSetIterator
   PIKEFUN int `==(mixed arg)
   {
     struct object * o;
-    struct MSetIterator_struct * msis;    
+    struct Xapian_MSetIterator_struct * msis;    
     MSetIterator  *mseti;
     MSetIterator  *msetb;
-    if(arg->type!= T_OBJECT) {RETURN(0);}
+    if(TYPEOF(*arg)!= T_OBJECT) {RETURN(0);}
     o = arg->u.object;
     mseti = (MSetIterator*)THIS->object_data->mseti;
     msis = OBJ2_MSETITERATOR(o);
@@ -2675,7 +2677,7 @@ PIKECLASS ESetIterator
 
     eseti2 = new ESetIterator((*eseti)--);
 
-    o = fast_clone_object(ESetIterator_program);
+    o = fast_clone_object(Xapian_ESetIterator_program);
 
     OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
 
@@ -2713,9 +2715,9 @@ PIKECLASS ESetIterator
     struct object * o;
     ESetIterator  *eseti;
     ESetIterator  *esetb;
-    struct ESetIterator_struct * esis;    
+    struct Xapian_ESetIterator_struct * esis;    
 
-    if(arg->type!= T_OBJECT) RETURN(0);
+    if(TYPEOF(*arg)!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     eseti = (ESetIterator*)THIS->object_data->eseti;
 
@@ -2829,7 +2831,7 @@ PIKEFUN object begin()
 
   mseti2 = new MSetIterator(mseti);
 
-  o = fast_clone_object(MSetIterator_program);
+  o = fast_clone_object(Xapian_MSetIterator_program);
 
   OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
 
@@ -2849,7 +2851,7 @@ PIKEFUN object _get_iterator()
 
   mseti2 = new MSetIterator(mseti);
 
-  o = fast_clone_object(MSetIterator_program);
+  o = fast_clone_object(Xapian_MSetIterator_program);
 
   OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
   OBJ2_MSETITERATOR(o)->msete = new MSetIterator(mset->end());
@@ -2877,7 +2879,7 @@ PIKEFUN object end()
   mseti = mset->end();
 
   mseti2 = new MSetIterator(mseti);
-  o = fast_clone_object(MSetIterator_program);
+  o = fast_clone_object(Xapian_MSetIterator_program);
 
   OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
 
@@ -2905,7 +2907,7 @@ PIKEFUN object back()
 
   mseti2 = new MSetIterator(mseti);
 
-  o = fast_clone_object(MSetIterator_program);
+  o = fast_clone_object(Xapian_MSetIterator_program);
 
   OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
 
@@ -3406,7 +3408,7 @@ PIKEFUN object begin()
 
   eseti2 = new ESetIterator(eseti);
 
-  o = fast_clone_object(ESetIterator_program);
+  o = fast_clone_object(Xapian_ESetIterator_program);
 
   OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
 
@@ -3434,7 +3436,7 @@ PIKEFUN object end()
 
   eseti2 = new ESetIterator(eseti);
 
-  o = fast_clone_object(ESetIterator_program);
+  o = fast_clone_object(Xapian_ESetIterator_program);
 
   OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
 
@@ -3462,7 +3464,7 @@ PIKEFUN object back()
 
   eseti2 = new ESetIterator(eseti);
 
-  o = fast_clone_object(ESetIterator_program);
+  o = fast_clone_object(Xapian_ESetIterator_program);
 
   OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
 
@@ -3493,7 +3495,7 @@ PIKEFUN object `[](int i)
 
   eseti2 = new ESetIterator(eseti);
 
-  o = fast_clone_object(ESetIterator_program);
+  o = fast_clone_object(Xapian_ESetIterator_program);
 
   OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
 
@@ -3816,7 +3818,7 @@ PIKEFUN object synonyms_iterator(string term)
   ti = db->synonyms_begin(str);
   ti2 = new TermIterator(ti);
 
-  o = fast_clone_object(TermIterator_program);
+  o = fast_clone_object(Xapian_TermIterator_program);
 
   OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
   OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->synonyms_end(str));
@@ -3842,7 +3844,7 @@ PIKEFUN object get_document(int id)
   Database  *db;
   Document doc;
   struct object * obj;
-  struct Document_struct * od;
+  struct Xapian_Document_struct * od;
 
   db = (Database*)THIS->object_data->database;
 
@@ -3859,7 +3861,7 @@ PIKEFUN object get_document(int id)
 
   pop_n_elems(args);
 
-  obj = fast_clone_object(Document_program);
+  obj = fast_clone_object(Xapian_Document_program);
 
   od = OBJ2_DOCUMENT(obj);
 
@@ -3887,7 +3889,7 @@ PIKEFUN object get_spelling_terms()
   ti = db->spellings_begin();
   ti2 = new TermIterator(ti);
 
-  o = fast_clone_object(TermIterator_program);
+  o = fast_clone_object(Xapian_TermIterator_program);
 
   OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
   OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->spellings_end());
@@ -3913,7 +3915,7 @@ PIKEFUN object get_spelling_terms(string term)
   ti = db->synonyms_begin(term->str);
   ti2 = new TermIterator(ti);
 
-  o = fast_clone_object(TermIterator_program);
+  o = fast_clone_object(Xapian_TermIterator_program);
 
   OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
   OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->synonyms_end(term->str));
@@ -4035,7 +4037,7 @@ EXIT
 
 PIKECLASS WriteableDatabase
 {
-INHERIT Database;
+INHERIT Xapian_Database;
 
 /*  WriteableDatabase.void create(string path, int mode) */
 /*! @decl void create(string path, int mode)
@@ -4136,7 +4138,7 @@ PIKEFUN int add_document(object document)
   Document * doc;
   docid id;
 
-  struct Document_struct * od;
+  struct Xapian_Document_struct * od;
 
   db = (WritableDatabase*)THIS->object_data->database;
   od = OBJ2_DOCUMENT(document);
@@ -4185,7 +4187,7 @@ PIKEFUN void replace_document(int did, object document)
   Document * doc;
   docid id;
 
-  struct Document_struct * od;
+  struct Xapian_Document_struct * od;
 
   db = (WritableDatabase*)THIS->object_data->database;
   od = OBJ2_DOCUMENT(document);
@@ -4228,7 +4230,7 @@ PIKEFUN void replace_document(string term, object document)
   Document * doc;
   docid id;
   string str;
-  struct Document_struct * od;
+  struct Xapian_Document_struct * od;
 
   db = (WritableDatabase*)THIS->object_data->database;
   od = OBJ2_DOCUMENT(document);
@@ -4642,7 +4644,7 @@ PIKEFUN object parse_query(string query, int flags)
 
   q1 = new Query(q);  
 
-  o = fast_clone_object(Query_program);
+  o = fast_clone_object(Xapian_Query_program);
   if(!o) Pike_error("unable to clone the query program.\n");
   if(!q1) Pike_error("unable to parse the query.\n");
   OBJ2_QUERY(o)->object_data->query = q1;
@@ -5037,7 +5039,7 @@ PIKEFUN object get_query()
 
   q2 = new Query(q);  
 
-  r = fast_clone_object(Query_program);
+  r = fast_clone_object(Xapian_Query_program);
 
   OBJ2_QUERY(r)->object_data->query = q2;
 
@@ -5086,7 +5088,7 @@ PIKEFUN object get_mset(int first, int maxitems, object rset)
 
   pop_n_elems(args);
 
-  o = fast_clone_object(MSet_program);
+  o = fast_clone_object(Xapian_MSet_program);
   mset1 = new MSet(mset);
   OBJ2_MSET(o)->object_data->mset = mset1;
 
@@ -5123,7 +5125,7 @@ PIKEFUN object get_mset(int first, int maxitems, object rset, function mdecider)
 
   pop_n_elems(args);
 
-  o = fast_clone_object(MSet_program);
+  o = fast_clone_object(Xapian_MSet_program);
   mset1 = new MSet(mset);
   OBJ2_MSET(o)->object_data->mset = mset1;
 
@@ -5170,7 +5172,7 @@ PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
 
   pop_n_elems(args);
 
-  o = fast_clone_object(MSet_program);
+  o = fast_clone_object(Xapian_MSet_program);
   mset1 = new MSet(mset);
   OBJ2_MSET(o)->object_data->mset = mset1;
 
@@ -5219,7 +5221,7 @@ PIKEFUN object get_eset(int maxitems, object rset)
 
   pop_n_elems(args);
 
-  o = fast_clone_object(ESet_program);
+  o = fast_clone_object(Xapian_ESet_program);
   eset1 = new ESet(eset);
   OBJ2_ESET(o)->object_data->eset = eset1;
 
@@ -5253,7 +5255,7 @@ PIKEFUN object get_eset(int maxitems, object rset, function edecider)
 
   pop_n_elems(args);
 
-  o = fast_clone_object(ESet_program);
+  o = fast_clone_object(Xapian_ESet_program);
   eset1 = new ESet(eset);
   OBJ2_ESET(o)->object_data->eset = eset1;
 
@@ -5310,7 +5312,7 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function 
 
   pop_n_elems(args);
 
-  o = fast_clone_object(ESet_program);
+  o = fast_clone_object(Xapian_ESet_program);
   eset1 = new ESet(eset);
   OBJ2_ESET(o)->object_data->eset = eset1;
 
@@ -5341,7 +5343,7 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k)
 
   pop_n_elems(args);
 
-  o = fast_clone_object(ESet_program);
+  o = fast_clone_object(Xapian_ESet_program);
   eset1 = new ESet(eset);
   OBJ2_ESET(o)->object_data->eset = eset1;
 
@@ -5366,7 +5368,7 @@ PIKEFUN object get_matching_terms(int docid)
   ti = enquire->get_matching_terms_begin(docid);
   ti2 = new TermIterator(ti);
 
-  o = fast_clone_object(TermIterator_program);
+  o = fast_clone_object(Xapian_TermIterator_program);
 
   OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
   OBJ2_TERMITERATOR(o)->tie = new TermIterator(enquire->get_matching_terms_end(docid));
@@ -5515,7 +5517,7 @@ PIKEFUN void set_document(object document)
 {
   TermGenerator * termgenerator;
   Document * doc;
-  struct Document_struct * od;
+  struct Xapian_Document_struct * od;
 
   termgenerator = (TermGenerator*)THIS->object_data->termgenerator;
 
@@ -5559,7 +5561,7 @@ PIKEFUN void set_document(object document)
     doc = termgenerator->get_document();    
     doc2 = new Document(doc);
 
-    o = fast_clone_object(Document_program);
+    o = fast_clone_object(Xapian_Document_program);
     OBJ2_DOCUMENT(o)->object_data->document = doc2;
 
     push_object(o);

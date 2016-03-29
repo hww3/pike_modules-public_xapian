@@ -54,6 +54,9 @@
 /* Define to 1 if you have the `libremote' library (-llibremote). */
 #undef HAVE_LIBLIBREMOTE
 
+/* Define to 1 if you have the `libstdc++' library (-llibstdc++). */
+#undef HAVE_LIBLIBSTDC__
+
 /* Define to 1 if you have the `libtest' library (-llibtest). */
 #undef HAVE_LIBLIBTEST
 

@@ -34,9 +34,9 @@ MODULE_LICENSE=GPL/LGPL/MPL
 # we shouldn't need to do anything to the rest of the file.
 
 CFLAGS=@CMOD_CFLAGS@
-LDFLAGS=@CMOD_LIBS@
+LDFLAGS=
 
-MODULE_LDFLAGS=@LDFLAGS@
+MODULE_LDFLAGS=@LDFLAGS@ @CMOD_LIBS@
 
 CONFIG_HEADERS=@CONFIG_HEADERS@
 
@@ -60,14 +60,13 @@ pmar:  verify
 	rm -rf ${MODULE_DIR_NAME}-1.${MIN}
 
 release: verify
-	svn copy -m "tagging project" http://wush.net/svn/hww3/trunk http://wush.net/svn/hww3/tags/Public_Xapian_RELEASE_1_${MIN}
-#	${MAKE} pmar RELEASE=${MIN}
-	svn export http://wush.net/svn/hww3/tags/Public_Xapian_RELEASE_1_${MIN}/pike_modules/Public_Xapian Public_Xapian-1.${MIN}
-	cd Public_Xapian-1.${MIN} && \
+	hg tag -r tip RELEASE_1.${MIN}
+	hg push
+	hg archive -r RELEASE_1.${MIN} ${MODULE_DIR_NAME}-1.${MIN}
+	cd ${MODULE_DIR_NAME}-1.${MIN} && \
 	pike -x module --autoheader && pike -x module --autoconf && \
 	rm -rf autom4*
-#	cp *.c ${MODULE_DIR_NAME}-1.${MIN}
-	gtar czvf ${MODULE_DIR_NAME}-1.${MIN}.tar.gz  ${MODULE_DIR_NAME}-1.${MIN}
+	tar cvf ${MODULE_DIR_NAME}-1.${MIN}.tar ${MODULE_DIR_NAME}-1.${MIN}
+	gzip ${MODULE_DIR_NAME}-1.${MIN}.tar
 	rm -rf ${MODULE_DIR_NAME}-1.${MIN}
 	pike upload_module_version.pike ${MODULE_NAME} 1.${MIN} "${MODULE_LICENSE}"
-

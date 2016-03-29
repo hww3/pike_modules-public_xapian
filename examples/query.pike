@@ -3,6 +3,12 @@ import Public.Xapian;
 
 int main(int argc, array argv)
 {
+  if(argc != 3)
+  {
+    werror("usage: query.pike xapianDb ftQuery\n");
+    exit(1);
+  }
+
   object database = Database(argv[1]);
   object e = Enquire(database);
   object s = Stem("english");

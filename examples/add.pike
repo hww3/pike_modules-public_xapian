@@ -3,6 +3,12 @@ import Public.Xapian;
 
 int main(int argc, array argv)
 {
+  if(argc != 3)
+  {
+    werror("usage: add.pike xapainDbName pathToAdd\n");
+    exit(1);
+  }
+
   object database = WriteableDatabase(argv[1], DB_CREATE_OR_OPEN);
 
   string doc = Stdio.read_file(argv[2]);

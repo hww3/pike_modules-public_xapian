@@ -3,6 +3,12 @@ import Public.Xapian;
 
 int main(int argc, array argv)
 {
+  if(argc != 3)
+  {
+    werror("usage: spell.pike xapianDb searchTerm\n");
+    exit(1);
+  }
+
   object database = Database(argv[1]);
 
   werror("spelling correction for %s: %s\n", argv[2], 

@@ -65,7 +65,7 @@ release: verify
 	hg archive -r RELEASE_1.${MIN} ${MODULE_DIR_NAME}-1.${MIN}
 	cd ${MODULE_DIR_NAME}-1.${MIN} && \
 	pike -x module --autoheader && pike -x module --autoconf && pike -x module xapian.cc && \
-	rm -rf autom4*
+	rm -rf autom4* && mv xapian.cc xapian.bk && pike -x module clean && mv xapian.bk xapian.cc
 	tar cvf ${MODULE_DIR_NAME}-1.${MIN}.tar ${MODULE_DIR_NAME}-1.${MIN}
 	gzip ${MODULE_DIR_NAME}-1.${MIN}.tar
 	rm -rf ${MODULE_DIR_NAME}-1.${MIN}

@@ -1,3 +1,7 @@
+Version 1.7
+
+- fixes for Pike 8.0
+
 Version 1.6
 
 - fixes for Xapian 1.2

@@ -17,9 +17,7 @@ Xapian::ExpandDeciderFilterTerms	ExpandDecider subclass which rejects terms in a
 
 Xapian::ErrorHandler	Decide if a Xapian::Error exception should be ignored
 Xapian::MatchSpy	Class for classifying matching documents by their values
-Xapian::PositionIterator	An iterator pointing to items in a list of positions
 Xapian::PostingIterator	An iterator pointing to items in a list of postings
-Xapian::ValueRangeProcessor	Base class for value range processors
 
 
 C++ Classes we need to write:

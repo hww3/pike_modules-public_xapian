@@ -270,8 +270,8 @@ PIKEFUN float get_maxextra()
   push_float((FLOAT_TYPE)i);
 }
 
-/*  Weight.float get_sumextra(int len) */
-/*! @decl float get_sumextra(int len)
+/*  Weight.float get_sumextra(int len, int uniqterms) */
+/*! @decl float get_sumextra(int len, int uniqterms)
  *!
  *!  Get an extra weight for a document to add to the sum calculated over 
  *!  the query terms. 
@@ -280,17 +280,19 @@ PIKEFUN float get_maxextra()
  *! weighting schemes to account for influence such as document length.
  *! @param len
  *!  the (unnormalised) document length.
+ *! @param uniqterms
+ *!  the number of unique terms in the document.
  *!
  *! @returns
  *!  
  *!
  */
-PIKEFUN float get_sumextra(int len)
+PIKEFUN float get_sumextra(int len, int uniqterms)
 {
   Weight *weight;
   weight = THIS->object_data->weight;
 
-  Xapian::weight i = weight->get_sumextra((doclength)len);
+  Xapian::weight i = weight->get_sumextra((termcount)len, (termcount)uniqterms);
 
   push_float((FLOAT_TYPE)i);
 }
@@ -304,20 +306,22 @@ PIKEFUN float get_sumextra(int len)
  *!  
  *! @param wdf
  *!  the within document frequency of the term.
-* !
+ *!
  *! @param len
  *!  the (unnormalised) document length.
-* !
+ *!
+ *! @param uniqterms
+ *!  number of unique terms in the document (used for absolute smoothing)
  *! @returns
  *!  
  *!
  */
-PIKEFUN float get_sumpart(int wdf, int len)
+PIKEFUN float get_sumpart(int wdf, int len, int uniqterms)
 {
   Weight *weight;
   weight = THIS->object_data->weight;
 
-  Xapian::weight i = weight->get_sumpart((termcount)wdf, (doclength)len);
+  Xapian::weight i = weight->get_sumpart((termcount)wdf, (termcount)len, (termcount)uniqterms);
 
   push_float((FLOAT_TYPE)i);
 }
@@ -1158,8 +1162,8 @@ PIKEFUN void create(int op, object left, object right)
   Query * l;
   Query * r;
 
-  l = OBJ2_QUERY(left)->object_data->query;
-  r = OBJ2_QUERY(right)->object_data->query;
+  l = OBJ2_XAPIAN_QUERY(left)->object_data->query;
+  r = OBJ2_XAPIAN_QUERY(right)->object_data->query;
 
   try
   {
@@ -1193,7 +1197,7 @@ PIKEFUN void create(int op, object query, float param)
 {
   Query * q;
 
-  q = OBJ2_QUERY(query)->object_data->query;
+  q = OBJ2_XAPIAN_QUERY(query)->object_data->query;
 
   try
   {
@@ -1418,7 +1422,7 @@ PIKECLASS PositionIterator
     if(TYPEOF(*arg)!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     posi = (PositionIterator*)THIS->object_data->positioni;
-    pis = OBJ2_POSITIONITERATOR(o);
+    pis = OBJ2_XAPIAN_POSITIONITERATOR(o);
     if(!pis) RETURN(0);
 
     posb = pis->object_data->positioni;
@@ -1609,7 +1613,7 @@ PIKECLASS ValueIterator
     if(TYPEOF(*arg)!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     valuei = (ValueIterator*)THIS->object_data->valuei;
-    vis = OBJ2_VALUEITERATOR(o);
+    vis = OBJ2_XAPIAN_VALUEITERATOR(o);
     if(!vis) RETURN(0);
 
     valueb = vis->object_data->valuei;
@@ -1770,7 +1774,7 @@ PIKECLASS TermIterator
     if(TYPEOF(*arg)!= T_OBJECT) RETURN(0);
     o = arg->u.object;
     termi = (TermIterator*)THIS->object_data->termi;
-    tis = OBJ2_TERMITERATOR(o);
+    tis = OBJ2_XAPIAN_TERMITERATOR(o);
     if(!tis) RETURN(0);
 
     termb = tis->object_data->termi;
@@ -1799,8 +1803,8 @@ PIKECLASS TermIterator
 
     o = fast_clone_object(Xapian_PositionIterator_program);
 
-    OBJ2_POSITIONITERATOR(o)->object_data->positioni = pi2;
-    OBJ2_POSITIONITERATOR(o)->pie = new PositionIterator(ti->positionlist_end());
+    OBJ2_XAPIAN_POSITIONITERATOR(o)->object_data->positioni = pi2;
+    OBJ2_XAPIAN_POSITIONITERATOR(o)->pie = new PositionIterator(ti->positionlist_end());
 
     push_object(o);    
   }
@@ -2030,8 +2034,8 @@ PIKEFUN object value_iterator()
 
   o = fast_clone_object(Xapian_ValueIterator_program);
 
-  (OBJ2_VALUEITERATOR(o)->object_data->valuei) = new ValueIterator(doc->values_begin());
-  (OBJ2_VALUEITERATOR(o)->vie) = new ValueIterator(doc->values_end());
+  (OBJ2_XAPIAN_VALUEITERATOR(o)->object_data->valuei) = new ValueIterator(doc->values_begin());
+  (OBJ2_XAPIAN_VALUEITERATOR(o)->vie) = new ValueIterator(doc->values_end());
   push_object(o);
 }
 
@@ -2054,8 +2058,8 @@ PIKEFUN object term_iterator()
 
   o = fast_clone_object(Xapian_TermIterator_program);
 
-  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
-  OBJ2_TERMITERATOR(o)->tie = new TermIterator(doc->termlist_end());
+  OBJ2_XAPIAN_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_XAPIAN_TERMITERATOR(o)->tie = new TermIterator(doc->termlist_end());
 
   push_object(o);    
 }
@@ -2458,7 +2462,7 @@ PIKECLASS MSetIterator
     doc2 = new Document(doc);
 
     o = fast_clone_object(Xapian_Document_program);
-    OBJ2_DOCUMENT(o)->object_data->document = doc2;
+    OBJ2_XAPIAN_DOCUMENT(o)->object_data->document = doc2;
 
     push_object(o);
   }
@@ -2542,7 +2546,7 @@ PIKECLASS MSetIterator
 
     o = fast_clone_object(Xapian_MSetIterator_program);
 
-    OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+    OBJ2_XAPIAN_MSETITERATOR(o)->object_data->mseti = mseti2;
 
     push_object(o);    
   }
@@ -2581,7 +2585,7 @@ PIKECLASS MSetIterator
     if(TYPEOF(*arg)!= T_OBJECT) {RETURN(0);}
     o = arg->u.object;
     mseti = (MSetIterator*)THIS->object_data->mseti;
-    msis = OBJ2_MSETITERATOR(o);
+    msis = OBJ2_XAPIAN_MSETITERATOR(o);
     if(!msis) {RETURN(0);}
 
     msetb = msis->object_data->mseti;
@@ -2679,7 +2683,7 @@ PIKECLASS ESetIterator
 
     o = fast_clone_object(Xapian_ESetIterator_program);
 
-    OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+    OBJ2_XAPIAN_ESETITERATOR(o)->object_data->eseti = eseti2;
 
     push_object(o);    
   }
@@ -2721,7 +2725,7 @@ PIKECLASS ESetIterator
     o = arg->u.object;
     eseti = (ESetIterator*)THIS->object_data->eseti;
 
-    esis = OBJ2_ESETITERATOR(o);
+    esis = OBJ2_XAPIAN_ESETITERATOR(o);
     if(!esis) RETURN(0);
 
     esetb = esis->object_data->eseti;
@@ -2833,7 +2837,7 @@ PIKEFUN object begin()
 
   o = fast_clone_object(Xapian_MSetIterator_program);
 
-  OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+  OBJ2_XAPIAN_MSETITERATOR(o)->object_data->mseti = mseti2;
 
   push_object(o);    
 }
@@ -2853,8 +2857,8 @@ PIKEFUN object _get_iterator()
 
   o = fast_clone_object(Xapian_MSetIterator_program);
 
-  OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
-  OBJ2_MSETITERATOR(o)->msete = new MSetIterator(mset->end());
+  OBJ2_XAPIAN_MSETITERATOR(o)->object_data->mseti = mseti2;
+  OBJ2_XAPIAN_MSETITERATOR(o)->msete = new MSetIterator(mset->end());
 
   push_object(o);    
 }
@@ -2881,7 +2885,7 @@ PIKEFUN object end()
   mseti2 = new MSetIterator(mseti);
   o = fast_clone_object(Xapian_MSetIterator_program);
 
-  OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+  OBJ2_XAPIAN_MSETITERATOR(o)->object_data->mseti = mseti2;
 
   push_object(o);    
 }
@@ -2909,7 +2913,7 @@ PIKEFUN object back()
 
   o = fast_clone_object(Xapian_MSetIterator_program);
 
-  OBJ2_MSETITERATOR(o)->object_data->mseti = mseti2;
+  OBJ2_XAPIAN_MSETITERATOR(o)->object_data->mseti = mseti2;
 
   push_object(o);    
 }
@@ -3192,7 +3196,7 @@ PIKEFUN void add_document(object iterator)
 
   MSetIterator * i;
 
-  i = OBJ2_MSETITERATOR(iterator)->object_data->mseti;
+  i = OBJ2_XAPIAN_MSETITERATOR(iterator)->object_data->mseti;
 
   rset->add_document(*i);
 
@@ -3234,7 +3238,7 @@ PIKEFUN void remove_document(object iterator)
 
   MSetIterator * i;
 
-  i = OBJ2_MSETITERATOR(iterator)->object_data->mseti;
+  i = OBJ2_XAPIAN_MSETITERATOR(iterator)->object_data->mseti;
 
   rset->remove_document(*i);
 
@@ -3282,7 +3286,7 @@ PIKEFUN int contains(object iterator)
   bool r;
   MSetIterator * i;
 
-  i = OBJ2_MSETITERATOR(iterator)->object_data->mseti;
+  i = OBJ2_XAPIAN_MSETITERATOR(iterator)->object_data->mseti;
 
   r = rset->contains(*i);
 
@@ -3410,7 +3414,7 @@ PIKEFUN object begin()
 
   o = fast_clone_object(Xapian_ESetIterator_program);
 
-  OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+  OBJ2_XAPIAN_ESETITERATOR(o)->object_data->eseti = eseti2;
 
   push_object(o);    
 }
@@ -3438,7 +3442,7 @@ PIKEFUN object end()
 
   o = fast_clone_object(Xapian_ESetIterator_program);
 
-  OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+  OBJ2_XAPIAN_ESETITERATOR(o)->object_data->eseti = eseti2;
 
   push_object(o);    
 }
@@ -3466,7 +3470,7 @@ PIKEFUN object back()
 
   o = fast_clone_object(Xapian_ESetIterator_program);
 
-  OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+  OBJ2_XAPIAN_ESETITERATOR(o)->object_data->eseti = eseti2;
 
   push_object(o);    
 }
@@ -3497,7 +3501,7 @@ PIKEFUN object `[](int i)
 
   o = fast_clone_object(Xapian_ESetIterator_program);
 
-  OBJ2_ESETITERATOR(o)->object_data->eseti = eseti2;
+  OBJ2_XAPIAN_ESETITERATOR(o)->object_data->eseti = eseti2;
 
   push_object(o);    
 }
@@ -3820,8 +3824,8 @@ PIKEFUN object synonyms_iterator(string term)
 
   o = fast_clone_object(Xapian_TermIterator_program);
 
-  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
-  OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->synonyms_end(str));
+  OBJ2_XAPIAN_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_XAPIAN_TERMITERATOR(o)->tie = new TermIterator(db->synonyms_end(str));
 
   push_object(o);    
 }
@@ -3863,7 +3867,7 @@ PIKEFUN object get_document(int id)
 
   obj = fast_clone_object(Xapian_Document_program);
 
-  od = OBJ2_DOCUMENT(obj);
+  od = OBJ2_XAPIAN_DOCUMENT(obj);
 
   od->object_data->document = new Document(doc);
     
@@ -3891,8 +3895,8 @@ PIKEFUN object get_spelling_terms()
 
   o = fast_clone_object(Xapian_TermIterator_program);
 
-  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
-  OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->spellings_end());
+  OBJ2_XAPIAN_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_XAPIAN_TERMITERATOR(o)->tie = new TermIterator(db->spellings_end());
 
   push_object(o);    
 }
@@ -3917,8 +3921,8 @@ PIKEFUN object get_spelling_terms(string term)
 
   o = fast_clone_object(Xapian_TermIterator_program);
 
-  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
-  OBJ2_TERMITERATOR(o)->tie = new TermIterator(db->synonyms_end(term->str));
+  OBJ2_XAPIAN_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_XAPIAN_TERMITERATOR(o)->tie = new TermIterator(db->synonyms_end(term->str));
 
   push_object(o);    
 }
@@ -4141,7 +4145,7 @@ PIKEFUN int add_document(object document)
   struct Xapian_Document_struct * od;
 
   db = (WritableDatabase*)THIS->object_data->database;
-  od = OBJ2_DOCUMENT(document);
+  od = OBJ2_XAPIAN_DOCUMENT(document);
 
   if(!od) Pike_error("Not a Document!\n");
 
@@ -4190,7 +4194,7 @@ PIKEFUN void replace_document(int did, object document)
   struct Xapian_Document_struct * od;
 
   db = (WritableDatabase*)THIS->object_data->database;
-  od = OBJ2_DOCUMENT(document);
+  od = OBJ2_XAPIAN_DOCUMENT(document);
 
   if(!od) Pike_error("Not a Document!\n");
 
@@ -4233,7 +4237,7 @@ PIKEFUN void replace_document(string term, object document)
   struct Xapian_Document_struct * od;
 
   db = (WritableDatabase*)THIS->object_data->database;
-  od = OBJ2_DOCUMENT(document);
+  od = OBJ2_XAPIAN_DOCUMENT(document);
 
   if(!od) Pike_error("Not a Document!\n");
 
@@ -4513,7 +4517,7 @@ PIKEFUN void set_stemmer(object stemmer)
   Stem * s;
 
   parser = THIS->object_data->parser;
-  s = OBJ2_STEM(stemmer)->object_data->stem; 
+  s = OBJ2_XAPIAN_STEM(stemmer)->object_data->stem; 
   parser->set_stemmer((const Stem)*s);
 
   pop_n_elems(args);
@@ -4534,7 +4538,7 @@ PIKEFUN void set_stopper(object stopper)
   Stopper * s;
 
   parser = THIS->object_data->parser;
-  s = OBJ2_STOPPER(stopper)->object_data->stopper; 
+  s = OBJ2_XAPIAN_STOPPER(stopper)->object_data->stopper; 
   parser->set_stopper((const Stopper*)s);
 
   pop_n_elems(args);
@@ -4555,7 +4559,7 @@ PIKEFUN void set_database(object database)
   Database * d;
 
   parser = THIS->object_data->parser;
-  d = OBJ2_DATABASE(database)->object_data->database; 
+  d = OBJ2_XAPIAN_DATABASE(database)->object_data->database; 
   parser->set_database((const Database)*d);
 
   pop_n_elems(args);
@@ -4647,7 +4651,7 @@ PIKEFUN object parse_query(string query, int flags)
   o = fast_clone_object(Xapian_Query_program);
   if(!o) Pike_error("unable to clone the query program.\n");
   if(!q1) Pike_error("unable to parse the query.\n");
-  OBJ2_QUERY(o)->object_data->query = q1;
+  OBJ2_XAPIAN_QUERY(o)->object_data->query = q1;
   pop_n_elems(args+1);
   push_object(o);
 }
@@ -4827,7 +4831,7 @@ PIKEFUN void create(object database)
   try
   {
     Database * db;
-    db = OBJ2_DATABASE(database)->object_data->database;
+    db = OBJ2_XAPIAN_DATABASE(database)->object_data->database;
 
     Enquire * enquire = new Enquire(*db);
 
@@ -4854,7 +4858,7 @@ PIKEFUN void create(object database)
 PIKEFUN void set_weighting_scheme(object weight)
 {
   Enquire * e = THIS->object_data->enquire;
-  Weight * w = (OBJ2_WEIGHT(weight)->object_data->weight);
+  Weight * w = (OBJ2_XAPIAN_WEIGHT(weight)->object_data->weight);
 
   e->set_weighting_scheme(*w);
   pop_n_elems(args);  
@@ -4878,7 +4882,7 @@ PIKEFUN void set_query(object query, int termcount)
   Enquire  *enquire;
   enquire = THIS->object_data->enquire;
 
-  q = OBJ2_QUERY(query)->object_data->query;
+  q = OBJ2_XAPIAN_QUERY(query)->object_data->query;
 
   enquire->set_query(*q, (Xapian::termcount)termcount);
   pop_n_elems(args);  
@@ -5041,7 +5045,7 @@ PIKEFUN object get_query()
 
   r = fast_clone_object(Xapian_Query_program);
 
-  OBJ2_QUERY(r)->object_data->query = q2;
+  OBJ2_XAPIAN_QUERY(r)->object_data->query = q2;
 
   push_object(r);
 }
@@ -5072,7 +5076,7 @@ PIKEFUN object get_mset(int first, int maxitems, object rset)
   struct object * o;
   RSet * rseto;
 
-  rseto = OBJ2_RSET(rset)->object_data->rset;
+  rseto = OBJ2_XAPIAN_RSET(rset)->object_data->rset;
 
   try
   {
@@ -5090,7 +5094,7 @@ PIKEFUN object get_mset(int first, int maxitems, object rset)
 
   o = fast_clone_object(Xapian_MSet_program);
   mset1 = new MSet(mset);
-  OBJ2_MSET(o)->object_data->mset = mset1;
+  OBJ2_XAPIAN_MSET(o)->object_data->mset = mset1;
 
   push_object(o);
 
@@ -5107,7 +5111,7 @@ PIKEFUN object get_mset(int first, int maxitems, object rset, function mdecider)
   RSet * rseto;
   PikeMatchDeciderProxy * md;
 
-  rseto = OBJ2_RSET(rset)->object_data->rset;
+  rseto = OBJ2_XAPIAN_RSET(rset)->object_data->rset;
   
   md = new PikeMatchDeciderProxy(mdecider);
 
@@ -5127,7 +5131,7 @@ PIKEFUN object get_mset(int first, int maxitems, object rset, function mdecider)
 
   o = fast_clone_object(Xapian_MSet_program);
   mset1 = new MSet(mset);
-  OBJ2_MSET(o)->object_data->mset = mset1;
+  OBJ2_XAPIAN_MSET(o)->object_data->mset = mset1;
 
   push_object(o);
 
@@ -5174,7 +5178,7 @@ PIKEFUN object get_mset(int first, int maxitems, int checkatleast)
 
   o = fast_clone_object(Xapian_MSet_program);
   mset1 = new MSet(mset);
-  OBJ2_MSET(o)->object_data->mset = mset1;
+  OBJ2_XAPIAN_MSET(o)->object_data->mset = mset1;
 
   push_object(o);
 }
@@ -5206,7 +5210,7 @@ PIKEFUN object get_eset(int maxitems, object rset)
   RSet * rseto;
   struct object * o;
 
-  rseto = OBJ2_RSET(rset)->object_data->rset;
+  rseto = OBJ2_XAPIAN_RSET(rset)->object_data->rset;
  
   try
   {
@@ -5223,7 +5227,7 @@ PIKEFUN object get_eset(int maxitems, object rset)
 
   o = fast_clone_object(Xapian_ESet_program);
   eset1 = new ESet(eset);
-  OBJ2_ESET(o)->object_data->eset = eset1;
+  OBJ2_XAPIAN_ESET(o)->object_data->eset = eset1;
 
   push_object(o);
 }
@@ -5240,7 +5244,7 @@ PIKEFUN object get_eset(int maxitems, object rset, function edecider)
 
   ed = new PikeExpandDeciderProxy(edecider);
 
-  rseto = OBJ2_RSET(rset)->object_data->rset;
+  rseto = OBJ2_XAPIAN_RSET(rset)->object_data->rset;
  
   try
   {
@@ -5257,7 +5261,7 @@ PIKEFUN object get_eset(int maxitems, object rset, function edecider)
 
   o = fast_clone_object(Xapian_ESet_program);
   eset1 = new ESet(eset);
-  OBJ2_ESET(o)->object_data->eset = eset1;
+  OBJ2_XAPIAN_ESET(o)->object_data->eset = eset1;
 
   push_object(o);
 }
@@ -5297,7 +5301,7 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function 
 
   ed = new PikeExpandDeciderProxy(edecider);
 
-  rseto = OBJ2_RSET(rset)->object_data->rset;
+  rseto = OBJ2_XAPIAN_RSET(rset)->object_data->rset;
  
   try
   {
@@ -5314,7 +5318,7 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k, function 
 
   o = fast_clone_object(Xapian_ESet_program);
   eset1 = new ESet(eset);
-  OBJ2_ESET(o)->object_data->eset = eset1;
+  OBJ2_XAPIAN_ESET(o)->object_data->eset = eset1;
 
   push_object(o);
 }
@@ -5328,7 +5332,7 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k)
   RSet * rseto;
   struct object * o;
 
-  rseto = OBJ2_RSET(rset)->object_data->rset;
+  rseto = OBJ2_XAPIAN_RSET(rset)->object_data->rset;
  
   try
   {
@@ -5345,7 +5349,7 @@ PIKEFUN object get_eset(int maxitems, object rset, int flags, float k)
 
   o = fast_clone_object(Xapian_ESet_program);
   eset1 = new ESet(eset);
-  OBJ2_ESET(o)->object_data->eset = eset1;
+  OBJ2_XAPIAN_ESET(o)->object_data->eset = eset1;
 
   push_object(o);
 }
@@ -5370,8 +5374,8 @@ PIKEFUN object get_matching_terms(int docid)
 
   o = fast_clone_object(Xapian_TermIterator_program);
 
-  OBJ2_TERMITERATOR(o)->object_data->termi = ti2;
-  OBJ2_TERMITERATOR(o)->tie = new TermIterator(enquire->get_matching_terms_end(docid));
+  OBJ2_XAPIAN_TERMITERATOR(o)->object_data->termi = ti2;
+  OBJ2_XAPIAN_TERMITERATOR(o)->tie = new TermIterator(enquire->get_matching_terms_end(docid));
 
   push_object(o);    
 
@@ -5521,7 +5525,7 @@ PIKEFUN void set_document(object document)
 
   termgenerator = (TermGenerator*)THIS->object_data->termgenerator;
 
-  od = OBJ2_DOCUMENT(document);
+  od = OBJ2_XAPIAN_DOCUMENT(document);
 
   if(!od) Pike_error("Not a Document!\n");
 
@@ -5562,7 +5566,7 @@ PIKEFUN void set_document(object document)
     doc2 = new Document(doc);
 
     o = fast_clone_object(Xapian_Document_program);
-    OBJ2_DOCUMENT(o)->object_data->document = doc2;
+    OBJ2_XAPIAN_DOCUMENT(o)->object_data->document = doc2;
 
     push_object(o);
   }
@@ -5589,7 +5593,7 @@ PIKEFUN void set_stemmer(object stemmer)
   Stem * s;
 
   termgenerator = THIS->object_data->termgenerator;
-  s = OBJ2_STEM(stemmer)->object_data->stem; 
+  s = OBJ2_XAPIAN_STEM(stemmer)->object_data->stem; 
   termgenerator->set_stemmer((const Stem)*s);
 
   pop_n_elems(args);
@@ -5610,7 +5614,7 @@ PIKEFUN void set_stopper(object stopper)
   Stopper * s;
 
   termgenerator = THIS->object_data->termgenerator;
-  s = OBJ2_STOPPER(stopper)->object_data->stopper; 
+  s = OBJ2_XAPIAN_STOPPER(stopper)->object_data->stopper; 
   termgenerator->set_stopper((const Stopper*)s);
 
   pop_n_elems(args);
@@ -5631,7 +5635,7 @@ PIKEFUN void set_database(object database)
   Database * d;
 
   termgenerator = THIS->object_data->termgenerator;
-  d = OBJ2_DATABASE(database)->object_data->database; 
+  d = OBJ2_XAPIAN_DATABASE(database)->object_data->database; 
 
   termgenerator->set_database((const Xapian::WritableDatabase&)*d);
 

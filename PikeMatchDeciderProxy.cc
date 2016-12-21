@@ -17,7 +17,7 @@ class PikeMatchDeciderProxy: public Xapian::MatchDecider
 
     o = fast_clone_object(Xapian_Document_program);
     d = (doc);
-    OBJ2_DOCUMENT(o)->object_data->document = &d;
+    OBJ2_XAPIAN_DOCUMENT(o)->object_data->document = &d;
 
     push_object(o);
 

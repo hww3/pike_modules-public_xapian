@@ -63,6 +63,9 @@
 /* Define to 1 if you have the `libweight' library (-llibweight). */
 #undef HAVE_LIBLIBWEIGHT
 
+/* Define to 1 if you have the `stdc++' library (-lstdc++). */
+#undef HAVE_LIBSTDC__
+
 /* Define to 1 if you have the `xapian' library (-lxapian). */
 #undef HAVE_LIBXAPIAN
 

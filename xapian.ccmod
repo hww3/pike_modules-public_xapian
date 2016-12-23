@@ -24,7 +24,8 @@ extern "C" {
 #include <vector>
 
 using namespace Xapian;
-using namespace std;
+using std::string;
+using std::vector;
 
 #include <ctype.h>
 

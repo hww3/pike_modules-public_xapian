@@ -80,6 +80,11 @@ AX_CXX_CHECK_LIB(xapian, [Xapian::Database])
 AX_CXX_CHECK_LIB(xapian, [Xapian::ScaleWeight::get_sumpart_needs_doclength () const], [AC_DEFINE([HAVE_WEIGHT_GET_SUMPART_NEEDS_DOCLENGTH], [1], [have Weight::get_sumpart_needs_doclength])])
 AX_CXX_CHECK_LIB(xapian, [Xapian::BoolWeight::get_maxpart () const], [AC_DEFINE([HAVE_WEIGHT_GETMAXPART], [1], ["have Weight::get_maxpart])])
 
+# -lc++ and -lstdc++ are mutually exclusive
+AX_CXX_CHECK_LIB(c++, [main], [xac_have_libcpp=yes])
+if test "x$xac_have_libcpp" == "x" ; then
+AX_CXX_CHECK_LIB(stdc++, [main])
+fi
 AC_CHECK_LIB(libbackend)
 AC_CHECK_LIB(libbrass)
 AC_CHECK_LIB(libchert)

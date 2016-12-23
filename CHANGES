@@ -1,3 +1,7 @@
+Version 1.9 
+- more fixes for Pike 8.0
+- build fixes for Xapian 1.4
+
 Version 1.8
 
 - fix for autodoc
